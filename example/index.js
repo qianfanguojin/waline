@@ -1,4 +1,4 @@
-const Application = require('../packages/server/index');
+const Application = require('@waline/vercel');
 
 module.exports = Application({
   async postSave(comment) {
