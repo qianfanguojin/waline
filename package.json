@@ -16,6 +16,7 @@
     "client:build": "npm run build:normal --workspace=@waline/client && npm run build:no-style --workspace=@waline/client && npm run build:dts --workspace=@waline/client",
     "client:dev": "npm run dev --workspace=@waline/client",
     "server:dev": "vercel dev ./example --listen 9090",
+    "server:dev01": "vercel dev ./example",
     "docs:build": "npm run build --workspace=docs",
     "docs:dev": "npm run dev --workspace=docs",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s",
