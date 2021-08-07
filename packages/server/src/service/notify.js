@@ -63,32 +63,66 @@ module.exports = class extends think.Service {
   }
 
   async wechat({ title, content }, self, parent) {
-    const { SC_KEY, SITE_NAME, SITE_URL } = process.env;
-    if (!SC_KEY) {
+    const { SC_KEY, SITE_NAME, SITE_URL, WECOM_LINK, WECOM_KEY } = process.env;
+    if (!(WECOM_LINK && WECOM_KEY) && !SC_KEY) {
       return false;
     }
+    if (WECOM_LINK && WECOM_KEY) {
+      const comment = self.comment
+        .replace(/<a href="(.*?)">(.*?)<\/a>/g, '\n[$2] $1\n')
+        .replace(/<[^>]+>/g, '');
+      const postName = self.url;
 
-    const data = {
-      self,
-      parent,
-      site: {
-        name: SITE_NAME,
-        url: SITE_URL,
-        postUrl: SITE_URL + self.url + '#' + self.objectId,
-      },
-    };
-    title = nunjucks.renderString(title, data);
-    content = nunjucks.renderString(content, data);
-
-    return request({
-      uri: `https://sctapi.ftqq.com/${SC_KEY}.send`,
-      method: 'POST',
-      form: {
-        text: title,
-        desp: content,
-      },
-      json: true,
-    });
+      const data = {
+        self: {
+          ...self,
+          comment,
+        },
+        postName,
+        parent,
+        site: {
+          name: SITE_NAME,
+          url: SITE_URL,
+          postUrl: SITE_URL + self.url + '#' + self.objectId,
+        },
+      };
+      const contentWechat = `💬 {{site.name|safe}}的文章《{{postName}}》有新评论啦
+  评论者昵称：{{self.nick}} 
+  评论者邮箱：{{self.mail}}
+  内容：{{self.comment}}
+  <a href='{{site.postUrl}}'>查看详情</a>`;
+      return request({
+        uri: WECOM_LINK,
+        method: 'POST',
+        body: {
+          sendkey: WECOM_KEY,
+          msg_type: 'text',
+          msg: nunjucks.renderString(contentWechat, data),
+        },
+        json: true,
+      });
+    } else {
+      const data = {
+        self,
+        parent,
+        site: {
+          name: SITE_NAME,
+          url: SITE_URL,
+          postUrl: SITE_URL + self.url + '#' + self.objectId,
+        },
+      };
+      title = nunjucks.renderString(title, data);
+      content = nunjucks.renderString(content, data);
+      return request({
+        uri: `https://sctapi.ftqq.com/${SC_KEY}.send`,
+        method: 'POST',
+        form: {
+          text: title,
+          desp: content,
+        },
+        json: true,
+      });
+    }
   }
 
   async qq(self, parent) {
