@@ -1,4 +1,4 @@
-const Application = require('../packages/server/index');
+const Application = require('./server');
 
 module.exports = Application({
   async postSave(comment) {
