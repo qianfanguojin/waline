@@ -1,19 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { Link, navigate } from '@reach/router';
+import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+
+import Header from '../../components/Header';
 
 export default function () {
   const { t } = useTranslation();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const user = useSelector((state) => state.user);
   const [error, setError] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (user && user.email) {
       navigate('/ui', { replace: true });
     }
-  }, []);
+  }, [navigate]);
 
   const onSubmit = async function (e) {
     e.preventDefault();
@@ -35,6 +39,7 @@ export default function () {
     }
 
     try {
+      setSubmitting(true);
       const resp = await dispatch.user.register({
         display_name: nick,
         email,
@@ -45,14 +50,17 @@ export default function () {
       if (resp && resp.verify) {
         alert(t('register success! please go to your mailbox to verify it!'));
       }
-      navigate('/ui/login', { replace: true });
+      navigate('/ui/login');
     } catch (e) {
       setError(t('register error! try again later'));
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
     <>
+      <Header />
       <div
         className="message popup notice"
         style={{
@@ -127,7 +135,11 @@ export default function () {
               />
             </p>
             <p className="submit">
-              <button type="submit" className="btn btn-l w-100 primary">
+              <button
+                type="submit"
+                disabled={submitting}
+                className="btn btn-l w-100 primary"
+              >
                 {t('register')}
               </button>
             </p>

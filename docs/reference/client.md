@@ -127,27 +127,6 @@ Waline 的服务端地址。
 - `'disable'`: 禁用登录，用户只能填写信息评论
 - `'force'`: 强制登录，用户必须注册并登录才可发布评论
 
-## avatar
-
-- 类型: `string`
-- 默认值: `mp`
-- 必填: 否
-
-[Gravatar](http://cn.gravatar.com/) 头像展示方式。
-
-可选值:
-
-- `''`
-- `'mp'`
-- `'identicon'`
-- `'monsterid'`
-- `'wavatar'`
-- `'retro'`
-- `'robohash'`
-- `'hide'`
-
-更多信息，请查看 [头像配置](../guide/client/avatar.md)。
-
 ## wordLimit
 
 - 类型: `number | [number, number]`
@@ -164,46 +143,44 @@ Waline 的服务端地址。
 
 评论列表分页，每页条数。
 
-## avatarCDN
-
-- 类型: `string`
-- 默认值: `https://sdn.geekzu.org/avatar/`
-- 必填: 否
-
-设置 Gravatar 头像 CDN 地址。
-
-## avatarForce
-
-- 类型: `boolean`
-- 默认值: `false`
-- 必填: 否
-
-每次访问是否**强制**拉取最新的*评论列表头像*
-
-> 不推荐设置为 `true`，目前的*评论列表头像*会自动带上 `Waline` 的版本号
-
 ## uploadImage
 
-- 类型: `Function`
+- 类型: `Function | false`
 - 必填: 否
 
 自定义图片上传方法，方便更好的存储图片。方法执行时会将图片对象传入。
 
+你可以设置为 `false` 以禁用图片上传功能。
+
 ## highlight
 
-- 类型: `boolean`
-- 默认值: `true`
+- 类型: `Highlighter | false`
 - 必填: 否
 
-**代码高亮**，默认开启，若不需要，请手动关闭
+**代码高亮**，默认使用 `hanabi`，你可以传入一个自己的代码高亮器。
 
-## mathTagSupport
+```ts
+(code: string, lang: string) => string
 
-- 类型: `boolean`
-- 默认值: `false`
+// 或
+
+(
+  code: string,
+  lang: string,
+  callback?: (error: unknown | undefined, code?: string) => void
+) => void;
+```
+
+你可以设置为 `false` 以禁用代码高亮功能。
+
+## math
+
+- 类型: `(blockMode: boolean, tex: string) => string | false`
 - 必填: 否
 
-是否注入核外样式以兼容 `<math>` 显示。
+自定义数学公式的渲染方法，方便更好的预览数学公式。更多请参考 [KaTeX API](https://katex.org/docs/api.html#server-side-rendering-or-rendering-to-a-string) 或 [MathJax API](http://docs.mathjax.org/en/latest/web/typeset.html#converting-a-math-string-to-other-formats)。
+
+你可以设置为 `false` 以禁止预览数学公式。
 
 ## copyright
 
@@ -286,6 +263,63 @@ Waline 的服务端地址。
 
 :::
 
+### avatar
+
+::: warning 已过时
+
+建议配合最新版本的服务端，通过服务端的 `AVATAR_PROXY` 配置。
+
+:::
+
+- 类型: `string`
+- 默认值: `mp`
+- 必填: 否
+
+[Gravatar](http://cn.gravatar.com/) 头像展示方式。
+
+可选值:
+
+- `''`
+- `'mp'`
+- `'identicon'`
+- `'monsterid'`
+- `'wavatar'`
+- `'retro'`
+- `'robohash'`
+- `'hide'`
+
+更多信息，请查看 [头像配置](../guide/client/avatar.md)。
+
+### avatarForce
+
+::: warning 已过时
+
+建议配合最新版本的服务端，通过服务端的 `AVATAR_PROXY` 配置。
+
+:::
+
+- 类型: `boolean`
+- 默认值: `false`
+- 必填: 否
+
+每次访问是否**强制**拉取最新的*评论列表头像*
+
+> 不推荐设置为 `true`，目前的*评论列表头像*会自动带上 `Waline` 的版本号
+
+### avatarCDN
+
+::: warning 已过时
+
+建议配合最新版本的服务端，通过服务端的 `AVATAR_PROXY` 配置。
+
+:::
+
+- 类型: `string`
+- 默认值: `https://seccdn.libravatar.org/avatar/`
+- 必填: 否
+
+设置头像 CDN 地址。可使用任何与 [Gravatar](http://cn.gravatar.com/) API 兼容的服务。
+
 ### anonymous
 
 ::: warning 已过时
@@ -298,6 +332,20 @@ Waline 的服务端地址。
 - 必填: 否
 
 是否允许登录评论。默认情况是两者都支持，设置为 `true` 表示仅支持匿名评论，`false` 表示仅支持登录评论。
+
+## mathTagSupport
+
+::: warning 已过时
+
+请在服务端使用 mathjax 渲染公式。
+
+:::
+
+- 类型: `boolean`
+- 默认值: `false`
+- 必填: 否
+
+是否注入核外样式以兼容 `<math>` 显示。
 
 ### copyRight
 

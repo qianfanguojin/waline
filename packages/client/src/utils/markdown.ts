@@ -1,10 +1,7 @@
-import hanabi from 'hanabi';
-import marked from 'marked';
+import { marked } from 'marked';
+import { markedTexExtensions } from './markedMathExtension';
 
-import type { EmojiMaps } from '../config';
-
-const inlineMathRegExp = /\B\$([^\s$]|[^\s$][^\n$]*[^\s$])\$\B/g;
-const blockMathRegExp = /(^|\n)\$\$(.+?)\$\$(\n|$)/gs;
+import type { EmojiMaps, Highlighter, TexRenderer } from '../config';
 
 export const parseEmoji = (text = '', emojiMap: EmojiMaps = {}): string =>
   text.replace(/:(.+?):/g, (placeholder, key: string) =>
@@ -13,28 +10,24 @@ export const parseEmoji = (text = '', emojiMap: EmojiMaps = {}): string =>
       : placeholder
   );
 
-export const parseMath = (content: string): string =>
-  content
-    .replace(
-      blockMathRegExp,
-      '<p class="vtex">Tex is not available in preview</p>'
-    )
-    .replace(
-      inlineMathRegExp,
-      '<span class="vtex">Tex is not available in preview</span>'
-    );
-
 export const parseMarkdown = (
   content: string,
-  highlight = true,
-  emojiMap: EmojiMaps
+  highlight: Highlighter,
+  emojiMap: EmojiMaps,
+  texRenderer: TexRenderer | false
 ): string => {
   marked.setOptions({
-    highlight: highlight ? hanabi : undefined,
+    highlight: highlight || undefined,
     breaks: true,
     smartLists: true,
     smartypants: true,
   });
 
-  return marked(parseMath(parseEmoji(content, emojiMap)));
+  if (texRenderer) {
+    const extensions = markedTexExtensions(texRenderer);
+
+    marked.use({ extensions });
+  }
+
+  return marked.parse(parseEmoji(content, emojiMap));
 };

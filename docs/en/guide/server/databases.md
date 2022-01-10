@@ -90,6 +90,14 @@ Due to preformance, using GitHub is not recommanded.
 
 :::
 
+## Deta Base
+
+Deta provides [Deta Base](https://docs.deta.sh/docs/base/about) free database support, which can be used even if it is not deployed on Deta. If deployed on Deta, there is no need to configure any environment variables. By default, Waline will use Deta Base as the database to store data. If it is deployed elsewhere, the following environment variables need to be configured.
+
+| Environment Variable | Required | Default | Description             |
+| -------------------- | -------- | ------- | ----------------------- |
+| `DETA_PROJECT_KEY`   | ✅       |         | Deta project secret key |
+
 ## Custom
 
 Besides above database storage, support for other storage services can also be added.

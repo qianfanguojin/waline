@@ -4,12 +4,14 @@ export interface Locale {
   mail: string;
   mailError: string;
   link: string;
+  optional: string;
   placeholder: string;
   sofa: string;
   submit: string;
   reply: string;
   cancelReply: string;
   comment: string;
+  refresh: string;
   more: string;
   preview: string;
   emoji: string;
@@ -23,6 +25,8 @@ export interface Locale {
   login: string;
   logout: string;
   admin: string;
+  sticky: string;
   word: string;
   wordHint: string;
+  anonymous: string;
 }

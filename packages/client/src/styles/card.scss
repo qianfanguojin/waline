@@ -56,7 +56,11 @@
         line-height: 1;
         text-decoration: none;
 
-        cursor: pointer;
+        svg {
+          position: relative;
+          bottom: -0.125em;
+          line-height: 1;
+        }
       }
 
       span.vnick {
@@ -133,15 +137,12 @@
     }
 
     .vcontent {
+      line-height: 2;
       position: relative;
-
       margin-bottom: 0.75em;
       padding-top: 0.625em;
-
       font-size: 0.875em;
-      line-height: 2;
       word-wrap: break-word;
-      word-break: break-all;
 
       &.expand {
         overflow: hidden;
@@ -161,13 +162,6 @@
 
           width: 100%;
 
-          background: -webkit-gradient(
-            linear,
-            left top,
-            left bottom,
-            from(#000),
-            to(rgba(255, 255, 255, 0.9))
-          );
           background: linear-gradient(180deg, #000, rgba(255, 255, 255, 0.9));
         }
 

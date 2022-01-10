@@ -1,26 +1,29 @@
 import React, { useEffect, useState } from 'react';
-import { Link, navigate } from '@reach/router';
+import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+
+import Header from '../../components/Header';
 
 import * as Icons from '../../components/icon';
 
 export default function () {
   const { t } = useTranslation();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const user = useSelector((state) => state.user);
   const [error, setError] = useState(false);
   const match = location.pathname.match(/(.*?)\/ui/);
-  const basepath = match ? match[1] : '/';
+  const basepath = match && match[1] ? match[1] : '/';
 
   useEffect(() => {
     if (user && user.email) {
       const query = new URLSearchParams(location.search);
       const redirect =
         query.get('redirect') ||
-        (user.type !== 'administrator' ? 'ui/profile' : 'ui');
+        (user.type !== 'administrator' ? '/ui/profile' : 'ui');
 
-      navigate(basepath + redirect, { replace: true });
+      navigate((basepath + redirect).replace(/\/+/g, '/'));
     }
   }, [user]);
 
@@ -40,7 +43,6 @@ export default function () {
 
     try {
       await dispatch.user.login({ email, password, remember });
-      navigate('/ui', { replace: true });
     } catch (e) {
       setError(t('email or password error'));
     }
@@ -52,8 +54,10 @@ export default function () {
     baseUrl = match ? match[1] : '/';
   }
 
+  const socials = ['github', 'twitter', 'facebook'];
   return (
     <>
+      <Header />
       <div
         className="message popup notice"
         style={{
@@ -110,10 +114,12 @@ export default function () {
             </p>
           </form>
           <div className="social-accounts">
-            {(window.ALLOW_SOCIALS || []).map((social) => (
+            {(window.ALLOW_SOCIALS || socials).map((social) => (
               <a
                 key={social}
-                href={`${baseUrl}oauth/${social}?redirect=${basepath}ui/profile`}
+                href={`${baseUrl}oauth${
+                  window.ALLOW_SOCIALS ? '/' + social + '?' : `?type=${social}`
+                }&redirect=${basepath}ui/profile`}
               >
                 {React.createElement(Icons[social])}
               </a>

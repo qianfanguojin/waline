@@ -18,9 +18,13 @@ assignees: ''
 
 - 服务部署在哪里？ | Where your waline deploy?
   - [ ] Vercel
+  - [ ] Deta
   - [ ] CloudBase
   - [ ] Docker
   - [ ] VPS, Virtual Host
+  - [ ] Deta
+  - [ ] InspireCloud
+  - [ ] Baidu CFC
   - [ ] Other
 - 数据存储在哪里？| Where your comment data store?
   - [ ] LeanCloud(https://leancloud.app)
@@ -31,3 +35,5 @@ assignees: ''
   - [ ] SQLite
   - [ ] PostgreSQL
   - [ ] GitHub
+  - [ ] Deta Base
+  - [ ] InspireCloud

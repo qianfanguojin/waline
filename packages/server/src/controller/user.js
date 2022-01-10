@@ -19,7 +19,7 @@ module.exports = class extends BaseRest {
 
     if (
       !think.isEmpty(resp) &&
-      ['administrator', 'guest'].includes(resp.type)
+      ['administrator', 'guest'].includes(resp[0].type)
     ) {
       return this.fail('USER_EXIST');
     }
@@ -52,7 +52,7 @@ module.exports = class extends BaseRest {
       await this.modelInstance.update(data, { email: data.email });
     }
 
-    if (!hasMailServie) {
+    if (!/^verify:/i.test(data.type)) {
       return this.success();
     }
 
@@ -78,7 +78,7 @@ module.exports = class extends BaseRest {
   }
 
   async putAction() {
-    const { display_name, url, password, github } = this.post();
+    const { display_name, url, password } = this.post();
     const { objectId } = this.ctx.state.userInfo;
 
     const updateData = {};
@@ -95,9 +95,13 @@ module.exports = class extends BaseRest {
       updateData.password = new PasswordHash().hashPassword(password);
     }
 
-    if (think.isString(github)) {
-      updateData.github = github;
-    }
+    const socials = ['github', 'twitter', 'facebook', 'google', 'weibo', 'qq'];
+    socials.forEach((social) => {
+      const nextSocial = this.post(social);
+      if (think.isString(nextSocial)) {
+        updateData[social] = nextSocial;
+      }
+    });
 
     if (think.isEmpty(updateData)) {
       return this.success();

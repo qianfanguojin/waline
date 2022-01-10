@@ -132,7 +132,7 @@ module.exports = class extends think.Service {
     }
 
     const comment = self.comment
-      .replace(/<a href="(.*?)">(.*?)<\/a>/g, '\n[$2] $1\n')
+      .replace(/<a href="(.*?)">(.*?)<\/a>/g, '')
       .replace(/<[^>]+>/g, '');
 
     const data = {
@@ -153,10 +153,7 @@ module.exports = class extends think.Service {
       `💬 {{site.name|safe}} 有新评论啦
 {{self.nick}} 评论道：
 {{self.comment}}
-邮箱：{{self.mail}}
-状态：{{self.status}} 
-仅供评论预览，查看完整內容：
-{{site.postUrl}}`;
+仅供预览评论，请前往上述页面查看完整內容。`;
 
     return request({
       uri: `https://qmsg.zendee.cn/send/${QMSG_KEY}`,
@@ -279,7 +276,9 @@ module.exports = class extends think.Service {
       }
     }
 
-    const disallowList = ['github'].map((social) => 'mail.' + social);
+    const disallowList = ['github', 'twitter', 'facebook'].map(
+      (social) => 'mail.' + social
+    );
     const fakeMail = new RegExp(`@(${disallowList.join('|')})$`, 'i');
     if (parent && !fakeMail.test(parent.mail) && comment.status !== 'waiting') {
       mailList.push({

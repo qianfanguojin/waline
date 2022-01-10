@@ -16,6 +16,9 @@ const {
   DISABLE_USERAGENT,
   AVATAR_PROXY,
   GITHUB_TOKEN,
+  DETA_PROJECT_KEY,
+  INSPIRECLOUD_SERVICE_SECRET,
+  OAUTH_URL,
 
   MARKDOWN_CONFIG = '{}',
   MARKDOWN_HIGHLIGHT,
@@ -57,6 +60,12 @@ if (LEAN_KEY) {
 } else if (think.env === 'cloudbase' || TCB_ENV) {
   storage = 'cloudbase';
   jwtKey = jwtKey || TENCENTCLOUD_SECRETKEY || TCB_KEY || TCB_ENV;
+} else if (DETA_PROJECT_KEY) {
+  storage = 'deta';
+  jwtKey = jwtKey || DETA_PROJECT_KEY;
+} else if (INSPIRECLOUD_SERVICE_SECRET) {
+  storage = 'inspirecloud';
+  jwtKey = jwtKey || INSPIRECLOUD_SERVICE_SECRET;
 }
 
 if (think.env === 'cloudbase' && storage === 'sqlite') {
@@ -65,7 +74,8 @@ if (think.env === 'cloudbase' && storage === 'sqlite') {
 
 const forbiddenWords = FORBIDDEN_WORDS ? FORBIDDEN_WORDS.split(/\s*,\s*/) : [];
 
-const isFalse = (content) => content && content.toLowerCase() === 'false';
+const isFalse = (content) =>
+  content && ['0', 'false'].includes(content.toLowerCase());
 
 const markdown = {
   config: JSON.parse(MARKDOWN_CONFIG),
@@ -81,6 +91,13 @@ const markdown = {
 
 if (isFalse(MARKDOWN_HIGHLIGHT)) markdown.config.highlight = false;
 
+let avatarProxy = 'https://avatar.75cdn.workers.dev/';
+if (AVATAR_PROXY) {
+  avatarProxy = !isFalse(AVATAR_PROXY) ? AVATAR_PROXY : '';
+}
+
+const oauthUrl = OAUTH_URL || 'https://user.75.team';
+
 module.exports = {
   workers: 1,
   storage,
@@ -88,13 +105,10 @@ module.exports = {
   forbiddenWords,
   disallowIPList: [],
   secureDomains: SECURE_DOMAINS ? SECURE_DOMAINS.split(/\s*,\s*/) : undefined,
-  disableUserAgent:
-    DISABLE_USERAGENT &&
-    !['0', 'false'].includes(DISABLE_USERAGENT.toLowerCase()),
-  avatarProxy: AVATAR_PROXY || 'https://avatar.75cdn.workers.dev/',
-
+  disableUserAgent: !isFalse(DISABLE_USERAGENT),
+  avatarProxy,
+  oauthUrl,
   markdown,
-
   mailSubject: MAIL_SUBJECT,
   mailTemplate: MAIL_TEMPLATE,
   mailSubjectAdmin: MAIL_SUBJECT_ADMIN,

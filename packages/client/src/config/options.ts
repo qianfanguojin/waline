@@ -55,6 +55,16 @@ export type Meta = 'nick' | 'mail' | 'link';
 
 export type UploadImage = (image: File) => Promise<string>;
 
+export type Highlighter =
+  | ((code: string, lang: string) => string)
+  | ((
+      code: string,
+      lang: string,
+      callback?: (error: unknown | undefined, code?: string) => void
+    ) => void);
+
+export type TexRenderer = (blockMode: boolean, tex: string) => string;
+
 export interface DeprecatedValineOptions {
   /**
    * @deprecated Use `locale.placeholder` instead, will be dropped in V2
@@ -70,6 +80,76 @@ export interface DeprecatedValineOptions {
    * @deprecated Use `requiredMeta` instead, will be dropped in V2
    */
   requiredFields?: Meta[];
+
+  /**
+   * @deprecated Please use `AVATAR_PROXY` in server, will be dropped in V2
+   *
+   * [Gravatar](http://cn.gravatar.com/) 头像展示方式
+   *
+   * 可选值:
+   *
+   * - `''`
+   * - `'mp'`
+   * - `'identicon'`
+   * - `'monsterid'`
+   * - `'wavatar'`
+   * - `'retro'`
+   * - `'robohash'`
+   * - `'hide'`
+   *
+   * @see https://waline.js.org/client/avatar.html
+   *
+   * [Gravatar](http://gravatar.com/) type
+   *
+   * Optional value:
+   *
+   * - `''`
+   * - `'mp'`
+   * - `'identicon'`
+   * - `'monsterid'`
+   * - `'wavatar'`
+   * - `'retro'`
+   * - `'robohash'`
+   * - `'hide'`
+   *
+   * @see https://waline.js.org/en/client/avatar.html
+   *
+   * @default 'mp'
+   */
+  avatar?: Avatar;
+
+  /**
+   * @deprecated Please use `AVATAR_PROXY` in server, will be dropped in V2
+   *
+   * 设置 Gravatar 头像 CDN 地址
+   *
+   * Gravatar CDN baseURL
+   *
+   * @default 'https://seccdn.libavatar.org/avatar/'
+   */
+  avatarCDN?: string;
+
+  /**
+   * @deprecated This option is no longer needed with latest server, will be dropped in V2
+   *
+   * 每次访问是否**强制**拉取最新的*评论列表头像*
+   *
+   * Whether **force** pulling the latest avatar each time
+   *
+   * @default false
+   */
+  avatarForce?: boolean;
+
+  /**
+   * @deprecated Please use mathjax in server, will be dropped in V2
+   *
+   * 是否注入额外的样式添加对 `<math>` 块的兼容
+   *
+   * Whether injecting additional styles to support math block
+   *
+   * @default false
+   */
+  mathTagSupport?: boolean;
 
   /**
    * @deprecated Use `emojis` instead, will be dropped in V2
@@ -101,6 +181,15 @@ export interface DeprecatedValineOptions {
    */
 
   emojiMaps?: EmojiMaps;
+
+  /**
+   * @deprecated Use `tex` instead
+   *
+   * 自定义 Tex 处理方法，用于预览。
+   *
+   * Custom math formula parse callback for preview.
+   */
+  previewMath?: TexRenderer | false;
 
   /**
    * @deprecated Use `login` instead, will be dropped in V2
@@ -174,41 +263,6 @@ export interface WalineOptions extends DeprecatedValineOptions {
    * @default window.location.pathname
    */
   path?: string;
-
-  /**
-   * [Gravatar](http://cn.gravatar.com/) 头像展示方式
-   *
-   * 可选值:
-   *
-   * - `''`
-   * - `'mp'`
-   * - `'identicon'`
-   * - `'monsterid'`
-   * - `'wavatar'`
-   * - `'retro'`
-   * - `'robohash'`
-   * - `'hide'`
-   *
-   * @see https://waline.js.org/client/avatar.html
-   *
-   * [Gravatar](http://gravatar.com/) type
-   *
-   * Optional value:
-   *
-   * - `''`
-   * - `'mp'`
-   * - `'identicon'`
-   * - `'monsterid'`
-   * - `'wavatar'`
-   * - `'retro'`
-   * - `'robohash'`
-   * - `'hide'`
-   *
-   * @see https://waline.js.org/en/client/avatar.html
-   *
-   * @default 'mp'
-   */
-  avatar?: Avatar;
 
   /**
    * 评论者相关属性
@@ -305,29 +359,9 @@ export interface WalineOptions extends DeprecatedValineOptions {
    * 代码高亮
    *
    * Code highlighting
-   *
-   * @default true
    */
 
-  highlight?: boolean;
-
-  /**
-   * 设置 Gravatar 头像 CDN 地址
-   *
-   * Gravatar CDN baseURL
-   *
-   * @default 'https://cdn.v2ex.com/gravatar/'
-   */
-  avatarCDN?: string;
-
-  /**
-   * 每次访问是否**强制**拉取最新的*评论列表头像*
-   *
-   * Whether **force** pulling the latest avatar each time
-   *
-   * @default false
-   */
-  avatarForce?: boolean;
+  highlight?: Highlighter | false;
 
   /**
    * 设置表情包
@@ -348,7 +382,14 @@ export interface WalineOptions extends DeprecatedValineOptions {
    * We will pass a picture file object when execute it.
    */
 
-  uploadImage?: UploadImage;
+  uploadImage?: UploadImage | false;
+
+  /**
+   * 自定义数学公式处理方法，用于预览。
+   *
+   * Custom math formula parse callback for preview.
+   */
+  tex?: TexRenderer | false;
 
   /**
    *
@@ -367,17 +408,6 @@ export interface WalineOptions extends DeprecatedValineOptions {
    * @default 'enable'
    */
   login?: 'enable' | 'disable' | 'force';
-
-  /**
-   * @deprecated Please use mathjax in server, will be dropped in V2
-   *
-   * 是否注入额外的样式添加对 `<math>` 块的兼容
-   *
-   * Whether injecting additional styles to support math block
-   *
-   * @default false
-   */
-  mathTagSupport?: boolean;
 
   /**
    * 是否在页脚展示版权信息

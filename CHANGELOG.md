@@ -1,3 +1,45 @@
+# (2021-12-12)
+
+### Features
+
+- refactor oauth login, add twitter and facebook login ([#705](https://github.com/walinejs/waline/pull/705))
+
+### BREAKING CHANGES
+
+- **vercel:** everyone who use MySQL, SQLite, pgsql to store data need add new field `twitter`, `facebook`, `google`, `weibo`, `qq` before use social login.
+
+# (2021-10-30)
+
+### Features
+
+- admin add language select ([6296fe5](https://github.com/lizheming/waline/commit/6296fe5f24b4d3864583939e93f29407b23b726b))
+- add lang support for default page ([81a8d2c](https://github.com/lizheming/waline/commit/81a8d2cfe58b56a423057da945d1728989d66691))
+- add avatarUrl to custom avatar url fix [#607](https://github.com/lizheming/waline/issues/607) ([a473ecb](https://github.com/lizheming/waline/commit/a473ecb59f4b4c841f1af099ec2a4acc3b763a1a))
+
+### Bug Fixes
+
+- fix scss lint error ([c8e5a71](https://github.com/lizheming/waline/commit/c8e5a71182068606bdf81f4634e132b3e8fddba7))
+- remove unused animation style ([5d32461](https://github.com/lizheming/waline/commit/5d324619a7e9a730517d8d613995eb6f1d9df46c))
+- fix recent comment have no url field bug ([2078a60](https://github.com/lizheming/waline/commit/2078a605f56c0c31ca6a4b3eb0846747159506cc))
+
+# (2021-09-21)
+
+### Bug Fixes
+
+- 🐛[bug] Comment length out of the preview box ([fdab120](https://github.com/lizheming/waline/commit/fdab12095983022b8f84cc8f201af253650a0aec))
+- **client:** try compatable with safari 13, close [#531](https://github.com/lizheming/waline/issues/531) ([#557](https://github.com/lizheming/waline/issues/557)) ([a13ab21](https://github.com/lizheming/waline/commit/a13ab2109d85a8474593b087066fa3e488b9e903))
+
+### Features
+
+- **vercel:** add version export on response header fix [#279](https://github.com/lizheming/waline/issues/279) ([a643d87](https://github.com/lizheming/waline/commit/a643d87d6093f8b3b484efb44cdc96139bc5259d))
+- [FEATURE] Uniform avatar configure by AVATAR_PROXY ([#555](https://github.com/walinejs/waline/pull/555)) ([ff0958e](https://github.com/walinejs/waline/commit/ff0958e76e18cb8d6e548af8f56cbfed16215a22))
+- add sticky comment support, need upgrade to latest client and server [#509](https://github.com/walinejs/waline/pull/509) ([e4225d3](https://github.com/walinejs/waline/commit/e4225d35ae92c11e4ed11dbb056ba3e8e4d1c233))
+- **doc:** add api doc https://waline.js.org/api/ ([39de903](https://github.com/walinejs/waline/commit/39de903cc0d18414ee86731f6e09f69bb51b8c24))
+
+### BREAKING CHANGES
+
+- **client:** Remove `avatar`, `avatarCDN` and `avatarForce` configuration for client and add `AVATAR_PROXY` for server.
+
 # (2021-04-29)
 
 ### Features

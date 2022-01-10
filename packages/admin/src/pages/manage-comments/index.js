@@ -12,24 +12,6 @@ import Paginator from '../../components/Paginator';
 import { buildAvatar, getPostUrl, formatDate } from './utils';
 import { useTranslation, Trans } from 'react-i18next';
 
-const FILTERS = [
-  [
-    'owner',
-    [
-      { type: 'all', name: <Trans i18nKey="all"></Trans> },
-      { type: 'mine', name: <Trans i18nKey="mine"></Trans> },
-    ],
-  ],
-  [
-    'status',
-    [
-      { type: 'approved', name: <Trans i18nKey="approved"></Trans> },
-      { type: 'waiting', name: <Trans i18nKey="waiting"></Trans> },
-      { type: 'spam', name: <Trans i18nKey="spam"></Trans> },
-    ],
-  ],
-];
-
 export default function () {
   const { t } = useTranslation();
   const keywordRef = useRef(null);
@@ -52,6 +34,24 @@ export default function () {
   const [cmtHandler, setCmtHandler] = useState({});
   const [actDropStatus, setActDropStatus] = useState(false);
   const [commentIds, setCommentIds] = useState([]);
+
+  const FILTERS = [
+    [
+      'owner',
+      [
+        { type: 'all', name: <Trans i18nKey="all"></Trans> },
+        { type: 'mine', name: <Trans i18nKey="mine"></Trans> },
+      ],
+    ],
+    [
+      'status',
+      [
+        { type: 'approved', name: <Trans i18nKey="approved"></Trans> },
+        { type: 'waiting', name: <Trans i18nKey="waiting"></Trans> },
+        { type: 'spam', name: <Trans i18nKey="spam"></Trans> },
+      ],
+    ],
+  ];
 
   useEffect(() => {
     getCommentList({ page: list.page, filter }).then((data) => {
@@ -148,6 +148,23 @@ export default function () {
               setCommentIds([]);
             });
           }
+        },
+      },
+      {
+        key: 'sticky',
+        show: comment && !comment.rid && comment.status === 'approved',
+        name: comment && comment.sticky ? t('disable sticky') : t('sticky'),
+        async action(e) {
+          e.preventDefault();
+
+          const sticky = !comment.sticky;
+          list.data.forEach((cmt) => {
+            if (cmt.objectId === comment.objectId) {
+              cmt.sticky = sticky;
+            }
+          });
+          await updateComment(comment.objectId, { sticky });
+          setList({ ...list });
         },
       },
       {
@@ -267,7 +284,10 @@ export default function () {
                         className={cls({ current: type === filter[key] })}
                         key={type}
                       >
-                        <a href="#" onClick={() => dispatch({ [key]: type })}>
+                        <a
+                          href="javascript:void(0)"
+                          onClick={() => dispatch({ [key]: type })}
+                        >
                           {name}
                           {key === 'status' &&
                           type !== 'approved' &&
@@ -317,7 +337,7 @@ export default function () {
                       >
                         {createActions().map(({ key, name, action }) => (
                           <li key={key}>
-                            <a href="#" onClick={action}>
+                            <a href="javascript:void(0)" onClick={action}>
                               {name}
                             </a>
                           </li>
@@ -380,6 +400,7 @@ export default function () {
                             objectId,
                             nick,
                             mail,
+                            avatar,
                             link,
                             comment,
                             ip,
@@ -387,6 +408,7 @@ export default function () {
                             status,
                             rid,
                             pid,
+                            sticky,
                             insertedAt,
                           },
                           idx
@@ -508,7 +530,7 @@ export default function () {
                                 <div className="comment-avatar">
                                   <img
                                     className="avatar"
-                                    src={buildAvatar(mail)}
+                                    src={buildAvatar(mail, avatar)}
                                     alt={nick}
                                     width="40"
                                     height="40"
@@ -608,6 +630,7 @@ export default function () {
                                     status,
                                     rid,
                                     pid,
+                                    sticky,
                                   }).map(({ key, disable, name, action }) =>
                                     disable ? (
                                       <span className="weak" key={key}>
@@ -616,7 +639,7 @@ export default function () {
                                     ) : (
                                       <a
                                         key={key}
-                                        href="#"
+                                        href="javascript:void(0)"
                                         className={`operate-${key}`}
                                         onClick={action}
                                       >

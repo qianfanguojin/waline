@@ -43,18 +43,42 @@ module.exports = class extends think.Logic {
 
     const user = await this.modelInstance.select(
       { email: userMail },
-      { field: ['email', 'url', 'display_name', 'type', 'github', 'avatar'] }
-    );
-    if (!think.isEmpty(user)) {
-      const userInfo = user[0];
-      userInfo.mailMd5 = helper.md5(userInfo.email);
-      if (/(github)/i.test(userInfo.avatar)) {
-        userInfo.avatar =
-          this.config('avatarProxy') +
-          '?url=' +
-          encodeURIComponent(userInfo.avatar);
+      {
+        field: [
+          'email',
+          'url',
+          'display_name',
+          'type',
+          'github',
+          'twitter',
+          'facebook',
+          'google',
+          'weibo',
+          'qq',
+          'avatar',
+        ],
       }
-      this.ctx.state.userInfo = userInfo;
+    );
+    if (think.isEmpty(user)) {
+      return;
     }
+
+    const userInfo = user[0];
+
+    let avatarUrl = userInfo.avatar
+      ? userInfo.avatar
+      : await think.service('avatar').stringify({
+          mail: userInfo.email,
+          nick: userInfo.display_name,
+          link: userInfo.url,
+        });
+    const { avatarProxy } = think.config();
+    if (avatarProxy) {
+      avatarUrl = avatarProxy + '?url=' + encodeURIComponent(avatarUrl);
+    }
+    userInfo.avatar = avatarUrl;
+    userInfo.mailMd5 = helper.md5(userInfo.email);
+    this.ctx.state.userInfo = userInfo;
+    this.ctx.state.token = token;
   }
 };

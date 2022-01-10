@@ -1,5 +1,5 @@
-import React from 'react';
-import { Router } from '@reach/router';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Provider, useSelector } from 'react-redux';
 import { store } from './store';
 import Login from './pages/login';
@@ -7,49 +7,54 @@ import ManageComments from './pages/manage-comments';
 import Register from './pages/register';
 import Profile from './pages/profile';
 
-export default function () {
-  const routers = createRouter({
-    routers: [
-      {
-        path: '/ui',
-        component: ManageComments,
-        meta: { auth: 'administrator' },
-      },
-      { path: '/ui/login', component: Login, meta: { public: true } },
-      { path: '/ui/register', component: Register, meta: { public: true } },
-      { path: '/ui/profile', component: Profile },
-    ],
-  });
+function Access(props) {
+  const user = useSelector((state) => state.user);
 
-  return <Provider store={store}>{routers}</Provider>;
-}
-
-export const createRouter = function (config) {
-  const PrivateRoute = (Comp, meta) => (props) => {
-    const user = useSelector((state) => state.user);
-
+  useEffect(() => {
+    const meta = props.meta || {};
+    const basename = props.basename || '';
     const emptyUser = !user || !user.email;
     const noPermission =
-      emptyUser || (meta.auth ? meta.auth !== user.type : false);
+      emptyUser || (meta.auth ? props.meta.auth !== user.type : false);
     if (emptyUser || noPermission) {
-      return (location.href = '/ui/login?redirect=' + location.pathname);
+      return (location.href =
+        basename + '/ui/login?redirect=' + location.pathname);
     }
+  }, [user, props.meta]);
 
-    return React.createElement(Comp, props);
-  };
+  return props.children;
+}
 
+export default function () {
   const match = location.pathname.match(/(.*?)\/ui/);
   const basepath = match ? match[1] : '/';
+
   return (
-    <Router basepath={basepath}>
-      {config.routers.map(
-        ({ path, component: Comp, meta = {} }, idx) =>
-          Comp &&
-          React.createElement(meta.public ? Comp : PrivateRoute(Comp, meta), {
-            path,
-            key: idx,
-          })
-      )}
-    </Router>
+    <Provider store={store}>
+      <Router basename={basepath}>
+        <Routes>
+          <Route
+            path="/ui"
+            exact
+            element={
+              <Access meta={{ auth: 'administrator' }} basename={basepath}>
+                <ManageComments />
+              </Access>
+            }
+          />
+          <Route path="/ui/login" exact element={<Login />} />
+          <Route path="/ui/register" exact element={<Register />} />
+          <Route
+            path="/ui/profile"
+            exact
+            element={
+              <Access>
+                <Profile />
+              </Access>
+            }
+          />
+        </Routes>
+      </Router>
+    </Provider>
   );
-};
+}

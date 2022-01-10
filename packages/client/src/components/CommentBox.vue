@@ -25,11 +25,19 @@
 
     <div class="vpanel">
       <div
-        v-if="config.login !== 'force' && !isLogin"
+        v-if="config.login !== 'force' && config.meta.length && !isLogin"
         :class="['vheader', `vheader-${config.meta.length}`]"
       >
         <div v-for="kind in config.meta" class="vheader-item" :key="kind">
-          <label :for="kind" v-text="locale[kind]" />
+          <label
+            :for="kind"
+            v-text="
+              locale[kind] +
+              (config.requiredMeta.includes(kind) || !config.requiredMeta.length
+                ? ''
+                : `(${locale.optional})`)
+            "
+          />
           <input
             :ref="
               (element) => {
@@ -97,6 +105,7 @@
           />
 
           <label
+            v-if="canUploadImage"
             for="waline-image-upload"
             class="vaction"
             :title="locale.uploadImage"
@@ -122,7 +131,7 @@
               &nbsp;/&nbsp;
               <span
                 :class="{ illegal: !isWordNumberLegal }"
-                v-text="textLimit"
+                v-text="wordLimit"
               />
             </span>
 
@@ -137,6 +146,7 @@
           />
 
           <button
+            v-if="config.login !== 'force' || isLogin"
             class="vbtn primary"
             title="Cmd|Ctrl + Enter"
             :disabled="isSubmitting"
@@ -163,6 +173,7 @@
                 @click="insert(`:${key}:`)"
               >
                 <img
+                  v-if="showEmoji"
                   class="vemoji"
                   :src="emoji.map[key]"
                   :alt="key"
@@ -236,6 +247,7 @@ import {
 
 import type { DeepReadonly } from 'vue';
 import type { ConfigRef } from '../composables';
+import type { UploadImage } from '../config';
 import type { CommentData } from '../typings';
 import type { EmojiConfig } from '../utils';
 
@@ -298,6 +310,8 @@ export default defineComponent({
 
     const isLogin = computed(() => Boolean(userInfo.value?.token));
 
+    const canUploadImage = computed(() => config.value.uploadImage !== false);
+
     const insert = (content: string): void => {
       const textArea = editorRef.value as HTMLTextAreaElement;
       const startPosition = textArea.selectionStart;
@@ -327,7 +341,7 @@ export default defineComponent({
       insert(uploadText);
 
       return Promise.resolve()
-        .then(() => config.value.uploadImage(file))
+        .then(() => (config.value.uploadImage as UploadImage)(file))
         .then((url) => {
           inputs.editor = inputs.editor.replace(
             uploadText,
@@ -340,7 +354,7 @@ export default defineComponent({
       if (event.dataTransfer?.items) {
         const file = getImagefromDataTransfer(event.dataTransfer.items);
 
-        if (file) {
+        if (file && canUploadImage.value) {
           uploadImage(file);
           event.preventDefault();
         }
@@ -351,14 +365,14 @@ export default defineComponent({
       if (event.clipboardData) {
         const file = getImagefromDataTransfer(event.clipboardData.items);
 
-        if (file) uploadImage(file);
+        if (file && canUploadImage.value) uploadImage(file);
       }
     };
 
     const onChange = (): void => {
       const inputElement = imageUploadRef.value as HTMLInputElement;
 
-      if (inputElement.files)
+      if (inputElement.files && canUploadImage.value)
         uploadImage(inputElement.files[0]).then(() => {
           // clear input so a same image can be uploaded later
           inputElement.value = '';
@@ -389,17 +403,14 @@ export default defineComponent({
         // check nick
         if (
           (requiredMeta.indexOf('nick') > -1 || comment.nick) &&
-          comment.nick.length < 3
+          !comment.nick
         ) {
           inputRefs.value.nick?.focus();
           return alert(locale.value.nickError);
         }
 
         // check mail
-        if (
-          (requiredMeta.indexOf('mail') > -1 || comment.mail) &&
-          !/^(\w)+(\.\w+)*@(\w)+((\.\w{2,}){1,3})$/.exec(comment.mail)
-        ) {
+        if (requiredMeta.indexOf('mail') > -1 && !comment.mail) {
           inputRefs.value.mail?.focus();
           return alert(locale.value.mailError);
         }
@@ -410,7 +421,7 @@ export default defineComponent({
           return;
         }
 
-        comment.nick = comment.nick || 'Anonymous';
+        if (!comment.nick) comment.nick = locale.value.anonymous;
       }
 
       if (!isWordNumberLegal.value)
@@ -436,8 +447,8 @@ export default defineComponent({
         lang,
         token: userInfo.value?.token,
         comment,
-      }).then(
-        (resp) => {
+      })
+        .then((resp) => {
           isSubmitting.value = false;
 
           store.update({
@@ -455,11 +466,12 @@ export default defineComponent({
           previewText.value = '';
 
           if (props.replyId) emit('cancel-reply');
-        },
-        () => {
+        })
+        .catch((err: TypeError) => {
           isSubmitting.value = false;
-        }
-      );
+
+          alert(err.message);
+        });
     };
 
     const onLogin = (event: Event): void => {
@@ -499,7 +511,7 @@ export default defineComponent({
     };
 
     const onLogout = (): void => {
-      setUserInfo(null);
+      setUserInfo({});
       localStorage.setItem('WALINE_USER', 'null');
       sessionStorage.setItem('WALINE_USER', 'null');
     };
@@ -526,7 +538,7 @@ export default defineComponent({
       const receiver = ({ data }: any): void => {
         if (!data || data.type !== 'profile') return;
 
-        setUserInfo({ ...userInfo.value, ...data });
+        setUserInfo(Object.assign({}, userInfo.value, data));
         [localStorage, sessionStorage]
           .filter((store) => store.getItem('WALINE_USER'))
           .forEach((store) =>
@@ -538,14 +550,27 @@ export default defineComponent({
       window.addEventListener('message', receiver);
     };
 
+    const popupHandler = (event: MouseEvent): void => {
+      if (
+        !(emojiButtonRef.value as HTMLElement).contains(event.target as Node) &&
+        !(emojiPopupRef.value as HTMLElement).contains(event.target as Node)
+      )
+        showEmoji.value = false;
+    };
+
     // watch editor
     watch(
       () => inputs.editor,
       (value) => {
-        const { highlight } = config.value;
+        const { highlight, tex } = config.value;
 
         content.value = value;
-        previewText.value = parseMarkdown(value, highlight, emoji.value.map);
+        previewText.value = parseMarkdown(
+          value,
+          highlight,
+          emoji.value.map,
+          tex
+        );
         wordNumber.value = getWordNumber(value);
 
         if (editorRef.value)
@@ -590,14 +615,6 @@ export default defineComponent({
       { immediate: true }
     );
 
-    const popupHandler = (event: MouseEvent): void => {
-      if (
-        !(emojiButtonRef.value as HTMLElement).contains(event.target as Node) &&
-        !(emojiPopupRef.value as HTMLElement).contains(event.target as Node)
-      )
-        showEmoji.value = false;
-    };
-
     onMounted(() => {
       document.body.addEventListener('click', popupHandler);
     });
@@ -638,6 +655,9 @@ export default defineComponent({
       emoji,
       emojiTabIndex,
       showEmoji,
+
+      // image
+      canUploadImage,
 
       // preview
       previewText,

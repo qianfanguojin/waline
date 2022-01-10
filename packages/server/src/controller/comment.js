@@ -4,6 +4,7 @@ const BaseRest = require('./rest');
 const akismet = require('../service/akismet');
 const { getMarkdownParser } = require('../service/markdown');
 
+const markdownParser = getMarkdownParser();
 async function formatCmt(
   { ua, user_id, ...comment },
   users = [],
@@ -18,28 +19,28 @@ async function formatCmt(
     comment.os = [ua.os.name, ua.os.version].filter((v) => v).join(' ');
   }
 
-  if (user_id) {
-    const user = users.find(({ objectId }) => user_id === objectId);
-
-    if (user) {
-      comment.nick = user.display_name;
-      comment.mail = user.email;
-      comment.link = user.url;
-      comment.type = user.type;
-
-      let { avatar } = user;
-      if (avatar) {
-        if (/(github)/i.test(avatar) && !avatar.includes(avatarProxy)) {
-          avatar = avatarProxy + '?url=' + encodeURIComponent(avatar);
-        }
-        comment.avatar = avatar;
-      }
-    }
+  const user = users.find(({ objectId }) => user_id === objectId);
+  if (!think.isEmpty(user)) {
+    comment.nick = user.display_name;
+    comment.mail = user.email;
+    comment.link = user.url;
+    comment.type = user.type;
   }
+
+  const avatarUrl =
+    user && user.avatar
+      ? user.avatar
+      : await think.service('avatar').stringify(comment);
+  comment.avatar =
+    avatarProxy && !avatarUrl.includes(avatarProxy)
+      ? avatarProxy + '?url=' + encodeURIComponent(avatarUrl)
+      : avatarUrl;
+
   comment.mail = helper.md5(
     comment.mail ? comment.mail.toLowerCase() : comment.mail
   );
 
+  comment.comment = markdownParser(comment.comment);
   return comment;
 }
 
@@ -50,8 +51,6 @@ module.exports = class extends BaseRest {
       `storage/${this.config('storage')}`,
       'Comment'
     );
-
-    this.parser = getMarkdownParser();
   }
 
   async getAction() {
@@ -62,7 +61,23 @@ module.exports = class extends BaseRest {
         const { count } = this.get();
         const comments = await this.modelInstance.select(
           { status: ['NOT IN', ['waiting', 'spam']] },
-          { desc: 'insertedAt', limit: count }
+          {
+            desc: 'insertedAt',
+            limit: count,
+            field: [
+              'comment',
+              'insertedAt',
+              'link',
+              'mail',
+              'nick',
+              'url',
+              'pid',
+              'rid',
+              'ua',
+              'user_id',
+              'sticky',
+            ],
+          }
         );
 
         const userModel = this.service(
@@ -169,6 +184,7 @@ module.exports = class extends BaseRest {
               'rid',
               'ua',
               'user_id',
+              'sticky',
             ],
           }
         );
@@ -193,9 +209,10 @@ module.exports = class extends BaseRest {
 
         const rootCount = comments.filter(({ rid }) => !rid).length;
         const pageOffset = Math.max((page - 1) * pageSize, 0);
-        const rootComments = comments
-          .filter(({ rid }) => !rid)
-          .slice(pageOffset, pageOffset + pageSize);
+        const rootComments = [
+          ...comments.filter(({ rid, sticky }) => !rid && sticky),
+          ...comments.filter(({ rid, sticky }) => !rid && !sticky),
+        ].slice(pageOffset, pageOffset + pageSize);
 
         return this.json({
           page,
@@ -231,17 +248,14 @@ module.exports = class extends BaseRest {
       rid,
       ua,
       url,
+      comment,
       ip: this.ctx.ip,
       insertedAt: new Date(),
-      comment: this.parser(comment),
       user_id: this.ctx.state.userInfo.objectId,
     };
 
     if (pid) {
-      data.comment = data.comment.replace(
-        '<p>',
-        `<p><a class="at" href="#${pid}">@${at}</a> , `
-      );
+      data.comment = `[@${at}](#${pid}): ` + data.comment;
     }
 
     think.logger.debug('Post Comment initial Data:', data);
@@ -335,6 +349,8 @@ module.exports = class extends BaseRest {
       }
 
       think.logger.debug(`Comment keyword check result: ${data.status}`);
+    } else {
+      data.status = 'approved';
     }
 
     const preSaveResp = await this.hook('preSave', data);

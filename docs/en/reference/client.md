@@ -127,27 +127,6 @@ Login mode status, optional values:
 - `'disable'`: Login is disabled, users should fill in infomation to comment
 - `'force'`: Forced login, users must login to comment
 
-## avatar
-
-- Type: `string`
-- Default: `'mp'`
-- Required: No
-
-[Gravatar](http://gravatar.com/) type.
-
-Optional value:
-
-- `''` (Empty string)
-- `'mp'`
-- `'identicon'`
-- `'monsterid'`
-- `'wavatar'`
-- `'retro'`
-- `'robohash'`
-- `'hide'`
-
-See the [Avatar setting](../guide/client/avatar.md) for more details.
-
 ## wordLimit
 
 - Type: `number | [number, number]`
@@ -164,44 +143,44 @@ Comment word s limit. When a single number is filled in, it 's the maximum numbe
 
 number of comments per page.
 
-## avatarCDN
-
-- Type: `string`
-- Default: `https://sdn.geekzu.org/avatar/`
-- Required: No
-
-Gravatar CDN baseURL.
-
-## avatarForce
-
-- Type: `boolean`
-- Default: `false`
-- Required: No
-
-Whether **force** pulling the latest avatar each time.
-
 ## uploadImage
 
-- Type: `Function`
+- Type: `Function | false`
 - Required: No
 
 Custom image upload callback to manage picture by yourself. We will pass a picture file object when execute it.
 
+If you set it to `false`, image upload feature will be disabled.
+
 ## highlight
 
-- Type: `boolean`
-- Default: `true`
+- Type: `Highlighter | false`
 - Required: No
 
-**Code highlighting**, it’s enabled by default, please close it selectively.
+**Code highlighting**, `hanabi` is used by default, and you can pass in a code highlighter of your own.
 
-## mathTagSupport
+```ts
+(code: string, lang: string) => string
 
-- Type: `boolean`
-- Default: `false`
+// or
+
+(
+  code: string,
+  lang: string,
+  callback?: (error: unknown | undefined, code?: string) => void
+) => void;
+```
+
+You can set it to `false` to disable the code highlighting.
+
+## math
+
+- Type: `(blockMode: boolean, tex: string) => string | false`
 - Required: No
 
-Whether inject extra styles to display `<math>` block
+Custom the rendering method of math to facilitate better preview of math. For details, please refer to [KaTeX API](https://katex.org/docs/api.html#server-side-rendering-or-rendering-to-a-string) or [MathJax API](http://docs.mathjax.org/en/latest/web/typeset.html#converting-a-math-string-to-other-formats).
+
+If you set it to 'false', math preview feature will be disabled.
 
 ### copyright
 
@@ -296,6 +275,75 @@ Please use `login` instead.
 - Required: No
 
 Whether to allow login comments. Both supported by default, set to `true` means only support anonymous comments, `false` means only support login comments.
+
+### avatarCDN
+
+::: waring Obsolete
+
+We recommand you to use lastest server and config it with `AVATAR_PROXY`.
+
+:::
+
+- Type: `string`
+- Default: `https://seccdn.libravatar.org/avatar/`
+- Required: No
+
+Avatar provider baseURL. Supports Gravatar-compatible APIs.
+
+### avatar
+
+::: waring Obsolete
+
+We recommand you to use lastest server and config it with `AVATAR_PROXY`.
+
+:::
+
+- Type: `string`
+- Default: `'mp'`
+- Required: No
+
+[Gravatar](http://gravatar.com/) type.
+
+Optional value:
+
+- `''` (Empty string)
+- `'mp'`
+- `'identicon'`
+- `'monsterid'`
+- `'wavatar'`
+- `'retro'`
+- `'robohash'`
+- `'hide'`
+
+See the [Avatar setting](../guide/client/avatar.md) for more details.
+
+### avatarForce
+
+::: waring Obsolete
+
+We recommand you to use lastest server and config it with `AVATAR_PROXY`.
+
+:::
+
+- Type: `boolean`
+- Default: `false`
+- Required: No
+
+Whether **force** pulling the latest avatar each time.
+
+## mathTagSupport
+
+::: waring Obsolete
+
+We recommand you to use mathjax on server.
+
+:::
+
+- Type: `boolean`
+- Default: `false`
+- Required: No
+
+Whether inject extra styles to display `<math>` block
 
 ### copyRight
 

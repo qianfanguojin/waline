@@ -2,15 +2,17 @@ import {
   defaultGravatarCDN,
   defaultLang,
   defaultUploadImage,
+  defaultTexRenderer,
   getAvatar,
   getMeta,
   locales,
 } from '../config';
 
-import { decodePath, removeEndingSplash } from '.';
+import { decodePath, isLinkHttp, removeEndingSplash } from '.';
 import { getEmojis, resolveOldEmojiMap } from './emoji';
 
 import type { EmojiInfo, EmojiMaps, Locale, WalineOptions } from '../config';
+import hanabi from 'hanabi';
 
 export interface EmojiConfig {
   tabs: Pick<EmojiInfo, 'name' | 'icon' | 'items'>[];
@@ -28,16 +30,30 @@ export interface Config
         | 'pageSize'
         | 'requiredMeta'
         | 'uploadImage'
+        | 'highlight'
+        | 'tex'
         | 'copyright'
         | 'login'
       >
     >,
-    Pick<WalineOptions, 'dark' | 'serverURL' | 'visitor' | 'highlight'> {
+    Pick<WalineOptions, 'dark' | 'serverURL' | 'visitor'> {
   locale: Locale;
   wordLimit: [number, number] | false;
   emoji: Promise<EmojiConfig>;
-  avatar: { cdn: string; param: string } | false;
+  avatar: { cdn: string; param: string; default: boolean; hide: boolean };
 }
+
+const getServerURL = (serverURL: string): string => {
+  const result = removeEndingSplash(serverURL);
+
+  return isLinkHttp(result) ? result : `https://${result}`;
+};
+
+const fallback = <T = unknown>(
+  value: T | false | undefined,
+  fallback: T
+): T | false =>
+  typeof value === 'function' ? value : value === false ? false : fallback;
 
 export const getConfig = ({
   el = '#waline',
@@ -50,20 +66,24 @@ export const getConfig = ({
   emojiMaps,
   requiredFields = [],
   anonymous,
+  avatarCDN,
+  avatar,
+  avatarForce,
+  previewMath,
 
   path = location.pathname,
   lang = defaultLang,
   locale = langMode,
   emoji = ['https://cdn.jsdelivr.net/gh/walinejs/emojis@1.0.0/weibo'],
-  avatar = 'mp',
-  avatarCDN = defaultGravatarCDN,
-  avatarForce,
   meta = ['nick', 'mail', 'link'],
   requiredMeta = requiredFields,
   pageSize = 10,
   wordLimit,
   uploadImage,
+  highlight,
+  tex = previewMath,
   copyright = true,
+  // TODO: changed to `login = 'enable'`
   login = anonymous === true
     ? 'disable'
     : anonymous === false
@@ -85,7 +105,7 @@ export const getConfig = ({
   return {
     el,
     // remove ending slash
-    serverURL: removeEndingSplash(serverURL),
+    serverURL: getServerURL(serverURL),
     path: decodePath(path),
     lang,
     locale: {
@@ -101,17 +121,17 @@ export const getConfig = ({
     meta: getMeta(meta),
     requiredMeta: getMeta(requiredMeta),
     pageSize,
-    avatar:
-      avatar === 'hide'
-        ? false
-        : {
-            cdn: avatarCDN,
-            param: `?d=${getAvatar(avatar)}${
-              avatarForce ? `&q=${Math.random().toString(32).substring(2)}` : ''
-            }`,
-          },
-    uploadImage:
-      typeof uploadImage === 'function' ? uploadImage : defaultUploadImage,
+    avatar: {
+      cdn: avatarCDN || defaultGravatarCDN,
+      param: `?d=${getAvatar(avatar)}${
+        avatarForce ? `&q=${Math.random().toString(32).substring(2)}` : ''
+      }`,
+      default: !avatar && !avatarCDN,
+      hide: avatar === 'hide',
+    },
+    uploadImage: fallback(uploadImage, defaultUploadImage),
+    highlight: fallback(highlight, hanabi),
+    tex: fallback(tex, defaultTexRenderer),
     copyright,
     login,
     ...more,

@@ -4,16 +4,20 @@ on:
   push:
     branches:
       - main
+    # paths:
+    #   - 'assets/*'
+    #   - 'docs/*'
+    #   - 'packages/server/src/logic/*'
 
 jobs:
   deploy-docs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v2.4.0
 
       - name: restore node_modules
-        uses: actions/cache@v2.1.6
+        uses: actions/cache@v2.1.7
         id: node-cache
         with:
           path: |
@@ -28,7 +32,7 @@ jobs:
 
       - name: npm-cache
         if: steps.node-cache.outputs.cache-hit != 'true'
-        uses: actions/cache@v2.1.6
+        uses: actions/cache@v2.1.7
         id: npm-cache
         with:
           path: ${{ steps.npm-cache-dir-path.outputs.dir }}
@@ -36,8 +40,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-npm-
 
-      - name: Use npm v7
-        run: sudo npm i -g npm@7
+      - name: Use npm v8
+        run: sudo npm i -g npm@8
 
       - name: Install Deps
         if: steps.node-cache.outputs.cache-hit != 'true'
@@ -50,7 +54,7 @@ jobs:
         run: npm run docs:build
 
       - name: Deploy
-        uses: JamesIves/github-pages-deploy-action@4.1.4
+        uses: JamesIves/github-pages-deploy-action@4.2.1
         with:
           branch: gh-pages
           folder: docs/.vuepress/dist
