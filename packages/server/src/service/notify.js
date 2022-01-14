@@ -114,6 +114,7 @@ module.exports = class extends think.Service {
             uri: `https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=${accesstoken}`,
             body: {
               msgtype: 'mpnews',
+              method: 'POST',
               mpnews: {
                 articles: [
                   {
