@@ -61,13 +61,13 @@ module.exports = class extends think.Service {
       html: content,
     });
   }
-
   async wechat({ title, content }, self, parent) {
-    const { SC_KEY, SITE_NAME, SITE_URL, WECOM_LINK, WECOM_KEY } = process.env;
-    if (!(WECOM_LINK && WECOM_KEY) && !SC_KEY) {
+    const { SC_KEY, SITE_NAME, SITE_URL, QYWX_AM } = process.env;
+    if (!QYWX_AM && !SC_KEY) {
       return false;
     }
-    if (WECOM_LINK && WECOM_KEY) {
+    if (QYWX_AM) {
+      const QYWX_AM_AY = QYWX_AM.split(',');
       const comment = self.comment
         .replace(/<a href="(.*?)">(.*?)<\/a>/g, '\n[$2] $1\n')
         .replace(/<[^>]+>/g, '');
@@ -91,17 +91,48 @@ module.exports = class extends think.Service {
   评论者邮箱：{{self.mail}}
   内容：{{self.comment}}
   <a href='{{site.postUrl}}'>查看详情</a>`;
-      return request({
-        uri: WECOM_LINK,
-        method: 'POST',
-        body: {
-          sendkey: WECOM_KEY,
-          msg_type: 'text',
-          msg: nunjucks.renderString(contentWechat, data),
+
+      let title = nunjucks.renderString(title, data);
+      let content = nunjucks.renderString(content, data);
+      return request(
+        {
+          uri: `https://qyapi.weixin.qq.com/cgi-bin/gettoken`,
+          method: 'POST',
+          body: {
+            corpid: `${QYWX_AM_AY[0]}`,
+            corpsecret: `${QYWX_AM_AY[1]}`,
+          },
+          json: true,
+          headers: {
+            'Content-Type': 'application/json',
+          },
         },
-        json: true,
-      });
-    } else {
+        (err, resp, data) => {
+          const json = JSON.parse(data);
+          access_token = json.access_token;
+          request({
+            uri: `https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=${accesstoken}`,
+            body: {
+              msgtype: 'mpnews',
+              mpnews: {
+                articles: [
+                  {
+                    title: `💬 {{site.name|safe}}的文章《{{postName}}》有新评论啦`,
+                    thumb_media_id: `${QYWX_AM_AY[4]}`,
+                    author: `Waline Comment`,
+                    content_source_url: `data.site.postUrl`,
+                    content: `${contentWechat}`,
+                    digest: `123213`,
+                  },
+                ],
+              },
+            },
+            json: true,
+          });
+        }
+      );
+    }
+    if (SC_KEY) {
       const data = {
         self,
         parent,
