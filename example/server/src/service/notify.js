@@ -86,54 +86,64 @@ module.exports = class extends think.Service {
           postUrl: SITE_URL + self.url + '#' + self.objectId,
         },
       };
-      const contentWechat = `💬 {{site.name|safe}}的文章《{{postName}}》有新评论啦
-  评论者昵称：{{self.nick}} 
-  评论者邮箱：{{self.mail}}
-  内容：{{self.comment}}
+      const contentWechat =
+        think.config('WXTemplate') ||
+        `💬 {{site.name|safe}}的文章《{{postName}}》有新评论啦 
+  【评论者昵称】：{{self.nick}}
+  【评论者邮箱】：{{self.mail}} 
+  【内容】：{{self.comment}} 
   <a href='{{site.postUrl}}'>查看详情</a>`;
-
-      let title = nunjucks.renderString(title, data);
-      let content = nunjucks.renderString(content, data);
-      return request(
-        {
+      console.log(contentWechat);
+      title = nunjucks.renderString(title, data);
+      const desp = nunjucks.renderString(contentWechat, data);
+      content = desp.replace(/\n/g, '<br/>');
+      return new Promise((resolve) => {
+        request({
           uri: `https://qyapi.weixin.qq.com/cgi-bin/gettoken`,
-          method: 'POST',
-          body: {
+          qs: {
             corpid: `${QYWX_AM_AY[0]}`,
             corpsecret: `${QYWX_AM_AY[1]}`,
           },
-          json: true,
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-        },
-        (err, resp, data) => {
-          const json = JSON.parse(data);
-          access_token = json.access_token;
-          request({
-            uri: `https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=${accesstoken}`,
+          json: true,
+        }).then((resp) => {
+          const access_token = resp.access_token;
+          return request({
+            url: `https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=${access_token}`,
             body: {
+              touser: `${QYWX_AM_AY[2]}`,
+              agentid: `${QYWX_AM_AY[3]}`,
               msgtype: 'mpnews',
-              method: 'POST',
               mpnews: {
                 articles: [
                   {
-                    title: `💬 {{site.name|safe}}的文章《{{postName}}》有新评论啦`,
+                    title: `${SITE_NAME} 有新评论啦`,
                     thumb_media_id: `${QYWX_AM_AY[4]}`,
                     author: `Waline Comment`,
-                    content_source_url: `data.site.postUrl`,
-                    content: `${contentWechat}`,
-                    digest: `123213`,
+                    content_source_url: `${data.site.postUrl}`,
+                    content: `${content}`,
+                    digest: `${desp}`,
                   },
                 ],
               },
             },
+            method: 'POST',
             json: true,
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }).then((err, resp, data) => {
+            if (err) {
+              console.log(err);
+            }
+            resolve();
           });
-        }
-      );
-    }
-    if (SC_KEY) {
+        });
+      });
+    } else if (SC_KEY) {
       const data = {
         self,
         parent,

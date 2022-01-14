@@ -33,6 +33,7 @@ const {
   MAIL_TEMPLATE_ADMIN,
   QQ_TEMPLATE,
   TG_TEMPLATE,
+  WX_TEMPLATE,
 } = process.env;
 
 let storage = 'leancloud';
@@ -101,4 +102,5 @@ module.exports = {
   mailTemplateAdmin: MAIL_TEMPLATE_ADMIN,
   QQTemplate: QQ_TEMPLATE,
   TGTemplate: TG_TEMPLATE,
+  WXTemplate: WX_TEMPLATE,
 };
