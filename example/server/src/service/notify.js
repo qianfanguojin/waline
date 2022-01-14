@@ -93,7 +93,7 @@ module.exports = class extends think.Service {
   【评论者邮箱】：{{self.mail}} 
   【内容】：{{self.comment}} 
   <a href='{{site.postUrl}}'>查看详情</a>`;
-      console.log(contentWechat);
+
       title = nunjucks.renderString(title, data);
       const desp = nunjucks.renderString(contentWechat, data);
       content = desp.replace(/\n/g, '<br/>');
@@ -104,7 +104,6 @@ module.exports = class extends think.Service {
             corpid: `${QYWX_AM_AY[0]}`,
             corpsecret: `${QYWX_AM_AY[1]}`,
           },
-          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
