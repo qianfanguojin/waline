@@ -273,6 +273,50 @@ module.exports = class extends think.Service {
     });
   }
 
+  async pushplus({ title, content }, self, parent) {
+    const {
+      PUSH_PLUS_KEY,
+      PUSH_PLUS_TOPIC: topic,
+      PUSH_PLUS_TEMPLATE: template,
+      PUSH_PLUS_CHANNEL: channel,
+      PUSH_PLUS_WEBHOOK: webhook,
+      PUSH_PLUS_CALLBACKURL: callbackUrl,
+      SITE_NAME,
+      SITE_URL,
+    } = process.env;
+
+    if (!PUSH_PLUS_KEY) {
+      return false;
+    }
+
+    const data = {
+      self,
+      parent,
+      site: {
+        name: SITE_NAME,
+        url: SITE_URL,
+        postUrl: SITE_URL + self.url + '#' + self.objectId,
+      },
+    };
+    title = nunjucks.renderString(title, data);
+    content = nunjucks.renderString(content, data);
+
+    return request({
+      uri: `http://www.pushplus.plus/send/${PUSH_PLUS_KEY}`,
+      method: 'POST',
+      form: {
+        title,
+        content,
+        topic,
+        template,
+        channel,
+        webhook,
+        callbackUrl,
+      },
+      json: true,
+    });
+  }
+
   async run(comment, parent, disableAuthorNotify = false) {
     const { AUTHOR_EMAIL, BLOGGER_EMAIL } = process.env;
     const { mailSubject, mailTemplate, mailSubjectAdmin, mailTemplateAdmin } =
@@ -287,7 +331,7 @@ module.exports = class extends think.Service {
       ? parent && parent.mail.toLowerCase() === AUTHOR.toLowerCase()
       : false;
 
-    const title = mailSubjectAdmin || '{{site.name}} 上有新评论了';
+    const title = mailSubjectAdmin || '{{site.name | safe}} 上有新评论了';
     const content =
       mailTemplateAdmin ||
       `
@@ -312,11 +356,10 @@ module.exports = class extends think.Service {
       );
       const qq = await this.qq(comment, parent);
       const telegram = await this.telegram(comment, parent);
+      const pushplus = await this.pushplus({ title, content }, comment, parent);
+      console.log(pushplus);
       if (
-        think.isEmpty(wechat) &&
-        think.isEmpty(qq) &&
-        think.isEmpty(telegram) &&
-        think.isEmpty(qywxAmWechat) &&
+        [wechat, qq, telegram, qywxAmWechat, pushplus].every(think.isEmpty) &&
         !isReplyAuthor
       ) {
         mailList.push({ to: AUTHOR, title, content });
@@ -331,7 +374,8 @@ module.exports = class extends think.Service {
       mailList.push({
         to: parent.mail,
         title:
-          mailSubject || '{{parent.nick}}，『{{site.name}}』上的评论收到了回复',
+          mailSubject ||
+          '{{parent.nick | safe}}，『{{site.name | safe}}』上的评论收到了回复',
         content:
           mailTemplate ||
           `
