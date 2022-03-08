@@ -50,7 +50,6 @@ module.exports = class extends think.Service {
     };
     title = nunjucks.renderString(title, data);
     content = nunjucks.renderString(content, data);
-
     return this.transporter.sendMail({
       from:
         SENDER_EMAIL && SENDER_NAME
@@ -98,13 +97,10 @@ module.exports = class extends think.Service {
     }
 
     const QYWX_AM_AY = QYWX_AM.split(',');
-    const comment = self.comment
-      .replace(/<a href="(.*?)">(.*?)<\/a>/g, '\n[$2] $1\n')
-      .replace(/<[^>]+>/g, '');
+    const comment = self.comment;
+    // .replace(/<a href="(.*?)">(.*?)<\/a>/g, '\n[$2] $1\n')
+    // .replace(/<[^>]+>/g, '');
     const postName = self.url;
-    console.log("===================================");
-    console.log(comment);
-    console.log("===================================");
     const data = {
       self: {
         ...self,
@@ -123,13 +119,49 @@ module.exports = class extends think.Service {
       `💬 {{site.name|safe}}的文章《{{postName}}》有新评论啦 
 【评论者昵称】：{{self.nick}}
 【评论者邮箱】：{{self.mail}} 
-【内容】：{{self.comment}} 
-<a href='{{site.postUrl}}'>查看详情</a>`;
+【内容】：
+<div style="background-color: #f5f5f5;">
+{{self.comment | safe }}
+</div>
+<a href='{{site.postUrl}}'>查看详情</a>
+`;
 
+    {
+      /* <style>
+.vemoji {
+  display: inline-block;
+  vertical-align: middle;
+  width: 1.25em;
+  margin: 0.25em;
+}
+.vtex {
+  background: var(--waline-info-bgcolor);
+  color: var(--waline-info-color);
+}
+span.vtex {
+  display: inline-block;
+  margin-right: 0.25em;
+  padding: 2px 4px;
+  border-radius: 0.2em;
+  font-size: var(--waline-info-font-size);
+  line-height: 1.5;
+}
+p.vtex {
+  text-align: center;
+}
+.katex-display {
+  padding-top: 0.2em;
+  padding-bottom: 0.2em;
+  overflow: auto hidden;
+  -webkit-overflow-scrolling: touch;
+  &::-webkit-scrollbar {
+    height: 3px;
+  }
+} */
+    }
     title = nunjucks.renderString(title, data);
     const desp = nunjucks.renderString(contentWechat, data);
     content = desp.replace(/\n/g, '<br/>');
-
     const { access_token } = await request({
       uri: `https://qyapi.weixin.qq.com/cgi-bin/gettoken`,
       qs: {
