@@ -102,7 +102,9 @@ module.exports = class extends think.Service {
       .replace(/<a href="(.*?)">(.*?)<\/a>/g, '\n[$2] $1\n')
       .replace(/<[^>]+>/g, '');
     const postName = self.url;
+    console.log("===================================");
     console.log(comment);
+    console.log("===================================");
     const data = {
       self: {
         ...self,
