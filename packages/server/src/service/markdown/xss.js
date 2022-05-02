@@ -9,7 +9,7 @@ const DOMPurify = createDOMPurify(new JSDOM('').window);
  */
 DOMPurify.addHook('afterSanitizeAttributes', function (node) {
   // set all elements owning target to target=_blank
-  if ('target' in node) {
+  if ('target' in node && node.href && !node.href.startsWith('about:blank#')) {
     node.setAttribute('target', '_blank');
     node.setAttribute('rel', 'noreferrer noopener');
   }
@@ -28,10 +28,16 @@ DOMPurify.addHook('afterSanitizeAttributes', function (node) {
 });
 
 const sanitize = (content) =>
-  DOMPurify.sanitize(content, {
-    FORBID_TAGS: ['form', 'input', 'style'],
-    FORBID_ATTR: ['autoplay', 'style'],
-  });
+  DOMPurify.sanitize(
+    content,
+    Object.assign(
+      {
+        FORBID_TAGS: ['form', 'input', 'style'],
+        FORBID_ATTR: ['autoplay', 'style'],
+      },
+      think.config('domPurify') || {}
+    )
+  );
 
 module.exports = {
   sanitize,

@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation, Trans } from 'react-i18next';
 import Header from '../../components/Header';
 import { updateProfile } from '../../services/user';
+import TwoFactorAuth from './twoFactorAuth';
 
 import * as Icons from '../../components/icon';
 
@@ -51,6 +52,18 @@ export default function () {
     location.reload();
   };
 
+  const changeAvatar = async function (e) {
+    e.preventDefault();
+
+    const url = prompt(t('please input avatar url'));
+    if (!url) {
+      return;
+    }
+
+    await updateProfile({ avatar: url });
+    location.reload();
+  };
+
   let baseUrl = window.serverURL;
   if (!baseUrl) {
     const match = location.pathname.match(/(.*?\/)ui/);
@@ -75,10 +88,11 @@ export default function () {
             <div className="col-mb-12 col-tb-3">
               <p>
                 <a
-                  href="http://gravatar.com/emails/"
-                  title={t('go to gravatar to change avatar')}
+                  href="javascript:void(0)"
+                  title={t('change avatar')}
                   target="_blank"
                   rel="noreferrer"
+                  onClick={changeAvatar}
                 >
                   <img
                     className="profile-avatar"
@@ -264,6 +278,9 @@ export default function () {
                   </ul>
                 </form>
               </section>
+              <br />
+              <TwoFactorAuth />
+              <br />
             </div>
           </div>
         </div>

@@ -14,10 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2.4.0
+        uses: actions/checkout@v3
 
       - name: restore node_modules
-        uses: actions/cache@v2.1.7
+        uses: actions/cache@v3
         id: node-cache
         with:
           path: |
@@ -32,7 +32,7 @@ jobs:
 
       - name: npm-cache
         if: steps.node-cache.outputs.cache-hit != 'true'
-        uses: actions/cache@v2.1.7
+        uses: actions/cache@v3
         id: npm-cache
         with:
           path: ${{ steps.npm-cache-dir-path.outputs.dir }}
@@ -54,9 +54,9 @@ jobs:
         run: npm run docs:build
 
       - name: Deploy
-        uses: JamesIves/github-pages-deploy-action@v4.2.2
+        uses: JamesIves/github-pages-deploy-action@v4.3.3
         with:
           branch: gh-pages
-          folder: docs/.vuepress/dist
+          folder: docs/src/.vuepress/dist
           ssh-key: ${{ secrets.SSH_TOKEN }}
           repository-name: walinejs/walinejs.github.io

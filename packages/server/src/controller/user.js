@@ -58,9 +58,7 @@ module.exports = class extends BaseRest {
 
     const notify = this.service('notify');
     const apiUrl =
-      this.ctx.protocol +
-      '://' +
-      this.ctx.host +
+      this.ctx.serverURL +
       '/verification?' +
       qs.stringify({ token, email: data.email });
 
@@ -78,8 +76,9 @@ module.exports = class extends BaseRest {
   }
 
   async putAction() {
-    const { display_name, url, password } = this.post();
+    const { display_name, url, avatar, password } = this.post();
     const { objectId } = this.ctx.state.userInfo;
+    const twoFactorAuth = this.post('2fa');
 
     const updateData = {};
 
@@ -91,8 +90,16 @@ module.exports = class extends BaseRest {
       updateData.url = url;
     }
 
+    if (avatar) {
+      updateData.avatar = avatar;
+    }
+
     if (password) {
       updateData.password = new PasswordHash().hashPassword(password);
+    }
+
+    if (think.isString(twoFactorAuth)) {
+      updateData['2fa'] = twoFactorAuth;
     }
 
     const socials = ['github', 'twitter', 'facebook', 'google', 'weibo', 'qq'];

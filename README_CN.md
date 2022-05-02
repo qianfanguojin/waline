@@ -2,14 +2,21 @@
 
 # Waline
 
-![npm version](https://img.shields.io/npm/v/@waline/vercel?color=critical&logo=npm&style=flat-square) ![npm bundle size (scoped)](https://img.shields.io/bundlephobia/minzip/@waline/client?style=flat-square&label=size)
-![npm](https://img.shields.io/npm/dm/@waline/vercel?style=flat-square) ![GitHub](https://img.shields.io/github/license/walinejs/waline?style=flat-square) [![Telegram](https://img.shields.io/badge/telegram-walinejs-2ca5e0?logo=telegram&style=flat-square)](https://t.me/walinejs) [![QQ](https://img.shields.io/badge/QQ-673663898-25bdff?logo=tencent-qq&style=flat-square)](https://qm.qq.com/cgi-bin/qm/qr?k=rPZvq_EBfwQa6QZX7sToVlhH49c6ed0R&jump_from=webapi)
+![作者](https://img.shields.io/badge/作者-lizheming,%20Mr.Hope-blue?style=for-the-badge) ![协议](https://img.shields.io/github/license/walinejs/waline?style=for-the-badge) [![qq](https://img.shields.io/badge/qq-waline交流群-f75137?logo=TencentQQ&style=for-the-badge)](https://jq.qq.com/?_wv=1027&k=bKoVBppG) [![telegram](https://img.shields.io/badge/telegram-walinejs-2ca5e0?logo=telegram&style=for-the-badge)](https://t.me/walinejs)
+
+![npm version](https://img.shields.io/npm/v/@waline/client?color=critical&logo=npm&style=flat-square&label=@walin/client) ![npm bundle size (scoped)](https://img.shields.io/bundlephobia/minzip/@waline/client?style=flat-square&label=@waline/client%20size) ![downloads](https://img.shields.io/npm/dm/@waline/vercel?style=flat-square&label=@waline/client%20downloads) [![jsDelivr hits](https://data.jsdelivr.com/v1/package/npm/@waline/client/badge)](https://www.jsdelivr.com/package/npm/@waline/client)
+
+![npm version](https://img.shields.io/npm/v/@waline/vercel?color=critical&logo=npm&style=flat-square&label=@walin/vercel)
 
 一款基于 [Valine](https://valine.js.org) 衍生的简洁、安全的评论系统。
 
 ---
 
-[English](https://github.com/walinejs/waline/blob/main/README.md) | 中文 | **查看文档**: <https://waline.js.org>
+> [English README](https://github.com/walinejs/waline/blob/main/README.md)
+
+## 文档
+
+### [English](https://waline.js.org/en/) | [简体中文](https://waline.js.org/)
 
 ## 特性
 
@@ -24,13 +31,12 @@
   | **客户端脚本** | **服务端部署** | **数据存储** |
   | [@waline/client](https://waline.js.org) | [Vercel](https://vercel.com) | [LeanCloud](https://leancloud.app) |
   | [MiniValine](https://minivaline.js.org/) | [Deta](https://deta.sh) | [CloudBase](https://clodbase.net) |
-  | [AprilComment](https://github.com/asforest/AprilComment) | [CloudBase](https://cloudbase.net/) | [MongoDB](https://mongodb.com) |
-  | | [轻服务](https://qingfuwu.cn) | MySQL |
-  | | [百度云 CFC](https://console.bce.baidu.com/cfc/#/cfc/functions) | SQLite |
-  | | [阿里云 FC](https://fc.console.aliyun.com/) | PostgreSQL |
-  | | [Railway](https://railway.app) | [GitHub](https://github.com) |
-  | | [Render](https://render.com) | [Deta Base](https://docs.deta.sh/docs/base/about) |
-  | | Docker | [轻服务](https://qingfuwu.cn/docs/nodejs/database/quickstart.html) |
+  | | [CloudBase](https://cloudbase.net/) | [MongoDB](https://mongodb.com) |
+  | | [百度云 CFC](https://console.bce.baidu.com/cfc/#/cfc/functions) | MySQL |
+  | | [阿里云 FC](https://fc.console.aliyun.com/) | SQLite |
+  | | [Railway](https://railway.app) | PostgreSQL |
+  | | [Render](https://render.com) | [GitHub](https://github.com) |
+  | | Docker | [Deta Base](https://docs.deta.sh/docs/base/about) |
   | | 独立部署 | |
 
 ## Todo
@@ -46,7 +52,7 @@
 - [x] 登录支持
 - [x] 评论管理
 - [x] 评论删除
-- [x] 其它数据库服务支持（已支持 LeanCloud, MySQL, MongoDB, SQLite, PostgreSQL, CloudBase, Deta Base, InspireCloud, GitHub）
+- [x] 其它数据库服务支持 (已支持 LeanCloud, MySQL, MongoDB, SQLite, PostgreSQL, CloudBase, Deta Base, GitHub)
 - [x] 基于 IP 的评论发布频率限制
 - [x] 基于关键词的评论过滤限制
 - [x] IP 黑名单

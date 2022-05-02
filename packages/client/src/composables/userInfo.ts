@@ -1,4 +1,5 @@
-import { readonly, ref } from 'vue';
+import { useStorage } from '@vueuse/core';
+
 import type { Ref } from 'vue';
 
 export interface UserInfo {
@@ -7,35 +8,13 @@ export interface UserInfo {
   email: string;
   url: string;
   token: string;
-  avatar?: string;
+  avatar: string;
   mailMd5: string;
 }
 
+export const USER_KEY = 'WALINE_USER';
+
 export type UserInfoRef = Ref<UserInfo | Record<string, never>>;
 
-const USER_KEY = 'WALINE_USER';
-
-const userInfo: UserInfoRef = ref({});
-
-export const useUserInfo = (): {
-  userInfo: UserInfoRef;
-  setUserInfo: (userInfo: UserInfo | Record<string, never>) => void;
-} => {
-  if (!userInfo.value)
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      userInfo.value =
-        JSON.parse(localStorage.getItem(USER_KEY) || '') ||
-        JSON.parse(sessionStorage.getItem(USER_KEY) || '') ||
-        {};
-    } catch (err) {
-      // do nothing
-    }
-
-  return {
-    userInfo: readonly(userInfo),
-    setUserInfo: (info: UserInfo | Record<string, never>): void => {
-      userInfo.value = info;
-    },
-  };
-};
+export const useUserInfo = (): UserInfoRef =>
+  useStorage<UserInfo | Record<string, never>>('USER_KEY', {});

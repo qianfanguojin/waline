@@ -17,7 +17,13 @@ module.exports = class extends think.Logic {
       secureDomains = think.isArray(secureDomains)
         ? secureDomains
         : [secureDomains];
-      secureDomains.push('localhost', '127.0.0.1', 'github.com');
+      secureDomains.push(
+        'localhost',
+        '127.0.0.1',
+        'github.com',
+        'api.twitter.com',
+        'www.facebook.com'
+      );
 
       const match = secureDomains.some((domain) =>
         think.isFunction(domain.test)
@@ -45,6 +51,7 @@ module.exports = class extends think.Logic {
       { email: userMail },
       {
         field: [
+          'id',
           'email',
           'url',
           'display_name',
@@ -56,6 +63,7 @@ module.exports = class extends think.Logic {
           'weibo',
           'qq',
           'avatar',
+          '2fa',
         ],
       }
     );

@@ -7,8 +7,12 @@ export async function getUserInfo() {
   });
 }
 
-export async function login({ email, password }) {
-  return request({ url: 'token', method: 'POST', body: { email, password } });
+export async function login({ email, password, code }) {
+  return request({
+    url: 'token',
+    method: 'POST',
+    body: { email, password, code },
+  });
 }
 
 export async function logout() {
@@ -19,4 +23,12 @@ export async function logout() {
 
 export async function register(user) {
   return request({ url: 'user', method: 'POST', body: user });
+}
+
+export async function forgot({ email }) {
+  return request({
+    url: 'user/password',
+    method: 'PUT',
+    body: { email },
+  });
 }

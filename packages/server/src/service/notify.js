@@ -273,8 +273,88 @@ module.exports = class extends think.Service {
     });
   }
 
+  async pushplus({ title, content }, self, parent) {
+    const {
+      PUSH_PLUS_KEY,
+      PUSH_PLUS_TOPIC: topic,
+      PUSH_PLUS_TEMPLATE: template,
+      PUSH_PLUS_CHANNEL: channel,
+      PUSH_PLUS_WEBHOOK: webhook,
+      PUSH_PLUS_CALLBACKURL: callbackUrl,
+      SITE_NAME,
+      SITE_URL,
+    } = process.env;
+
+    if (!PUSH_PLUS_KEY) {
+      return false;
+    }
+
+    const data = {
+      self,
+      parent,
+      site: {
+        name: SITE_NAME,
+        url: SITE_URL,
+        postUrl: SITE_URL + self.url + '#' + self.objectId,
+      },
+    };
+    title = nunjucks.renderString(title, data);
+    content = nunjucks.renderString(content, data);
+
+    return request({
+      uri: `http://www.pushplus.plus/send/${PUSH_PLUS_KEY}`,
+      method: 'POST',
+      form: {
+        title,
+        content,
+        topic,
+        template,
+        channel,
+        webhook,
+        callbackUrl,
+      },
+      json: true,
+    });
+  }
+
+  async discord({ title, content }, self, parent) {
+    const { DISCORD_WEBHOOK, SITE_NAME, SITE_URL } = process.env;
+    if (!DISCORD_WEBHOOK) {
+      return false;
+    }
+
+    const data = {
+      self,
+      parent,
+      site: {
+        name: SITE_NAME,
+        url: SITE_URL,
+        postUrl: SITE_URL + self.url + '#' + self.objectId,
+      },
+    };
+    title = nunjucks.renderString(title, data);
+    content = nunjucks.renderString(
+      think.config('DiscordTemplate') ||
+        `💬 {{site.name|safe}} 有新评论啦 
+    【评论者昵称】：{{self.nick}}
+    【评论者邮箱】：{{self.mail}} 
+    【内容】：{{self.comment}} 
+    【地址】：{{site.postUrl}}`,
+      data
+    );
+
+    return request({
+      uri: DISCORD_WEBHOOK,
+      method: 'POST',
+      form: {
+        content: title + '\n' + content,
+      },
+      json: true,
+    });
+  }
+
   async run(comment, parent, disableAuthorNotify = false) {
-    const { AUTHOR_EMAIL, BLOGGER_EMAIL } = process.env;
+    const { AUTHOR_EMAIL, BLOGGER_EMAIL, DISABLE_AUTHOR_NOTIFY } = process.env;
     const { mailSubject, mailTemplate, mailSubjectAdmin, mailTemplateAdmin } =
       think.config();
     const AUTHOR = AUTHOR_EMAIL || BLOGGER_EMAIL;
@@ -287,7 +367,7 @@ module.exports = class extends think.Service {
       ? parent && parent.mail.toLowerCase() === AUTHOR.toLowerCase()
       : false;
 
-    const title = mailSubjectAdmin || '{{site.name}} 上有新评论了';
+    const title = mailSubjectAdmin || '{{site.name | safe}} 上有新评论了';
     const content =
       mailTemplateAdmin ||
       `
@@ -303,7 +383,7 @@ module.exports = class extends think.Service {
       <br/>
     </div>`;
 
-    if (!isAuthorComment && !disableAuthorNotify) {
+    if (!DISABLE_AUTHOR_NOTIFY && !isAuthorComment && !disableAuthorNotify) {
       const wechat = await this.wechat({ title, content }, comment, parent);
       const qywxAmWechat = await this.qywxAmWechat(
         { title, content },
@@ -312,11 +392,12 @@ module.exports = class extends think.Service {
       );
       const qq = await this.qq(comment, parent);
       const telegram = await this.telegram(comment, parent);
+      const pushplus = await this.pushplus({ title, content }, comment, parent);
+      const discord = await this.discord({ title, content }, comment, parent);
       if (
-        think.isEmpty(wechat) &&
-        think.isEmpty(qq) &&
-        think.isEmpty(telegram) &&
-        think.isEmpty(qywxAmWechat) &&
+        [wechat, qq, telegram, qywxAmWechat, pushplus, discord].every(
+          think.isEmpty
+        ) &&
         !isReplyAuthor
       ) {
         mailList.push({ to: AUTHOR, title, content });
@@ -331,7 +412,8 @@ module.exports = class extends think.Service {
       mailList.push({
         to: parent.mail,
         title:
-          mailSubject || '{{parent.nick}}，『{{site.name}}』上的评论收到了回复',
+          mailSubject ||
+          '{{parent.nick | safe}}，『{{site.name | safe}}』上的评论收到了回复',
         content:
           mailTemplate ||
           `

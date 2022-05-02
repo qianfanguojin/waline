@@ -1,4 +1,3 @@
-const helper = require('think-helper');
 const parser = require('ua-parser-js');
 const BaseRest = require('./rest');
 const akismet = require('../service/akismet');
@@ -8,7 +7,8 @@ const markdownParser = getMarkdownParser();
 async function formatCmt(
   { ua, user_id, ...comment },
   users = [],
-  { avatarProxy }
+  { avatarProxy },
+  loginUser
 ) {
   ua = parser(ua);
   if (!think.config('disableUserAgent')) {
@@ -36,9 +36,12 @@ async function formatCmt(
       ? avatarProxy + '?url=' + encodeURIComponent(avatarUrl)
       : avatarUrl;
 
-  comment.mail = helper.md5(
-    comment.mail ? comment.mail.toLowerCase() : comment.mail
-  );
+  const isAdmin = loginUser && loginUser.type === 'administrator';
+  if (!isAdmin) {
+    delete comment.mail;
+  } else {
+    comment.orig = comment.comment;
+  }
 
   comment.comment = markdownParser(comment.comment);
   return comment;
@@ -55,30 +58,40 @@ module.exports = class extends BaseRest {
 
   async getAction() {
     const { type } = this.get();
+    const { userInfo } = this.ctx.state;
 
     switch (type) {
       case 'recent': {
         const { count } = this.get();
-        const comments = await this.modelInstance.select(
-          { status: ['NOT IN', ['waiting', 'spam']] },
-          {
-            desc: 'insertedAt',
-            limit: count,
-            field: [
-              'comment',
-              'insertedAt',
-              'link',
-              'mail',
-              'nick',
-              'url',
-              'pid',
-              'rid',
-              'ua',
-              'user_id',
-              'sticky',
-            ],
-          }
-        );
+        const where = {};
+        if (think.isEmpty(userInfo) || this.config('storage') === 'deta') {
+          where.status = ['NOT IN', ['waiting', 'spam']];
+        } else {
+          where._complex = {
+            _logic: 'or',
+            status: ['NOT IN', ['waiting', 'spam']],
+            user_id: userInfo.objectId,
+          };
+        }
+
+        const comments = await this.modelInstance.select(where, {
+          desc: 'insertedAt',
+          limit: count,
+          field: [
+            'status',
+            'comment',
+            'insertedAt',
+            'link',
+            'mail',
+            'nick',
+            'url',
+            'pid',
+            'rid',
+            'ua',
+            'user_id',
+            'sticky',
+          ],
+        });
 
         const userModel = this.service(
           `storage/${this.config('storage')}`,
@@ -100,20 +113,26 @@ module.exports = class extends BaseRest {
 
         return this.json(
           await Promise.all(
-            comments.map((cmt) => formatCmt(cmt, users, this.config()))
+            comments.map((cmt) =>
+              formatCmt(cmt, users, this.config(), userInfo)
+            )
           )
         );
       }
 
       case 'count': {
         const { url } = this.get();
-        const data = await this.modelInstance.select(
-          {
-            url: ['IN', url],
+        const where = { url: ['IN', url] };
+        if (think.isEmpty(userInfo) || this.config('storage') === 'deta') {
+          where.status = ['NOT IN', ['waiting', 'spam']];
+        } else {
+          where._complex = {
+            _logic: 'or',
             status: ['NOT IN', ['waiting', 'spam']],
-          },
-          { field: ['url'] }
-        );
+            user_id: userInfo.objectId,
+          };
+        }
+        const data = await this.modelInstance.select(where, { field: ['url'] });
         const counts = url.map(
           (u) => data.filter(({ url }) => url === u).length
         );
@@ -154,40 +173,119 @@ module.exports = class extends BaseRest {
           offset: Math.max((page - 1) * pageSize, 0),
         });
 
+        const userModel = this.service(
+          `storage/${this.config('storage')}`,
+          'Users'
+        );
+        const user_ids = Array.from(
+          new Set(comments.map(({ user_id }) => user_id).filter((v) => v))
+        );
+
+        let users = [];
+        if (user_ids.length) {
+          users = await userModel.select(
+            { objectId: ['IN', user_ids] },
+            {
+              field: ['display_name', 'email', 'url', 'type', 'avatar'],
+            }
+          );
+        }
+
         return this.success({
           page,
           totalPages: Math.ceil(count / pageSize),
           pageSize,
           spamCount,
           waitingCount,
-          data: comments,
+          data: await Promise.all(
+            comments.map((cmt) =>
+              formatCmt(cmt, users, this.config(), userInfo)
+            )
+          ),
         });
       }
 
       default: {
         const { path: url, page, pageSize } = this.get();
-
-        const comments = await this.modelInstance.select(
-          {
-            url,
+        const where = { url };
+        if (think.isEmpty(userInfo) || this.config('storage') === 'deta') {
+          where.status = ['NOT IN', ['waiting', 'spam']];
+        } else {
+          where._complex = {
+            _logic: 'or',
             status: ['NOT IN', ['waiting', 'spam']],
-          },
-          {
-            desc: 'insertedAt',
-            field: [
-              'comment',
-              'insertedAt',
-              'link',
-              'mail',
-              'nick',
-              'pid',
-              'rid',
-              'ua',
-              'user_id',
-              'sticky',
-            ],
-          }
-        );
+            user_id: userInfo.objectId,
+          };
+        }
+
+        const totalCount = await this.modelInstance.count(where);
+        const pageOffset = Math.max((page - 1) * pageSize, 0);
+        let comments = [];
+        let rootComments = [];
+        let rootCount = 0;
+        const selectOptions = {
+          desc: 'insertedAt',
+          field: [
+            'status',
+            'comment',
+            'insertedAt',
+            'link',
+            'mail',
+            'nick',
+            'pid',
+            'rid',
+            'ua',
+            'user_id',
+            'sticky',
+          ],
+        };
+
+        /**
+         * most of case we have just little comments
+         * while if we want get rootComments, rootCount, childComments with pagination
+         * we have to query three times from storage service
+         * That's so expensive for user, especially in the serverless.
+         * so we have a comments length check
+         * If you have less than 1000 comments, then we'll get all comments one time
+         * then we'll compute rootComment, rootCount, childComments in program to reduce http request query
+         *
+         * Why we have limit and the limit is 1000?
+         * Many serverless storages have fetch data limit, for example LeanCloud is 100, and CloudBase is 1000
+         * If we have much commments, We should use more request to fetch all comments
+         * If we have 3000 comments, We have to use 30 http request to fetch comments, things go athwart.
+         * And Serverless Service like vercel have excute time limit
+         * if we have more http requests in a serverless function, it may timeout easily.
+         * so we use limit to avoid it.
+         */
+        if (totalCount < 1000) {
+          comments = await this.modelInstance.select(where, selectOptions);
+          rootCount = comments.filter(({ rid }) => !rid).length;
+          rootComments = [
+            ...comments.filter(({ rid, sticky }) => !rid && sticky),
+            ...comments.filter(({ rid, sticky }) => !rid && !sticky),
+          ].slice(pageOffset, pageOffset + pageSize);
+        } else {
+          rootComments = await this.modelInstance.select(
+            { ...where, rid: undefined },
+            {
+              ...selectOptions,
+              offset: pageOffset,
+              limit: pageSize,
+            }
+          );
+          const children = await this.modelInstance.select(
+            {
+              ...where,
+              rid: ['IN', rootComments.map(({ objectId }) => objectId)],
+            },
+            selectOptions
+          );
+          comments = [...rootComments, ...children];
+          rootCount = await this.modelInstance.count({
+            ...where,
+            rid: undefined,
+          });
+        }
 
         const userModel = this.service(
           `storage/${this.config('storage')}`,
@@ -207,25 +305,23 @@ module.exports = class extends BaseRest {
           );
         }
 
-        const rootCount = comments.filter(({ rid }) => !rid).length;
-        const pageOffset = Math.max((page - 1) * pageSize, 0);
-        const rootComments = [
-          ...comments.filter(({ rid, sticky }) => !rid && sticky),
-          ...comments.filter(({ rid, sticky }) => !rid && !sticky),
-        ].slice(pageOffset, pageOffset + pageSize);
-
         return this.json({
           page,
           totalPages: Math.ceil(rootCount / pageSize),
           pageSize,
-          count: comments.length,
+          count: totalCount,
           data: await Promise.all(
             rootComments.map(async (comment) => {
-              const cmt = await formatCmt(comment, users, this.config());
+              const cmt = await formatCmt(
+                comment,
+                users,
+                this.config(),
+                userInfo
+              );
               cmt.children = await Promise.all(
                 comments
                   .filter(({ rid }) => rid === cmt.objectId)
-                  .map((cmt) => formatCmt(cmt, users, this.config()))
+                  .map((cmt) => formatCmt(cmt, users, this.config(), userInfo))
                   .reverse()
               );
               return cmt;
@@ -324,10 +420,9 @@ module.exports = class extends BaseRest {
       think.logger.debug(`Comment initial status is ${data.status}`);
 
       if (data.status === 'approved') {
-        const spam = await akismet(
-          data,
-          this.ctx.protocol + '://' + this.ctx.host
-        ).catch((e) => console.log(e)); // ignore akismet error
+        const spam = await akismet(data, this.ctx.serverURL).catch((e) =>
+          console.log(e)
+        ); // ignore akismet error
 
         if (spam === true) {
           data.status = 'spam';
@@ -383,12 +478,19 @@ module.exports = class extends BaseRest {
 
     think.logger.debug(`Comment post hooks postSave done!`);
 
-    return this.success(await formatCmt(resp, [userInfo], this.config()));
+    return this.success(
+      await formatCmt(resp, [userInfo], this.config(), userInfo)
+    );
   }
 
   async putAction() {
     const data = this.post();
-    const oldData = await this.modelInstance.select({ objectId: this.id });
+    let oldData = await this.modelInstance.select({ objectId: this.id });
+    if (think.isEmpty(oldData)) {
+      return this.success();
+    }
+
+    oldData = oldData[0];
     const preUpdateResp = await this.hook('preUpdate', {
       ...data,
       objectId: this.id,
@@ -398,18 +500,22 @@ module.exports = class extends BaseRest {
       return this.fail(preUpdateResp);
     }
 
-    await this.modelInstance.update(data, { objectId: this.id });
+    const newData = await this.modelInstance.update(data, {
+      objectId: this.id,
+    });
 
     if (
       oldData.status === 'waiting' &&
       data.status === 'approved' &&
       oldData.pid
     ) {
-      let pComment = await this.modelInstance.select({ objectId: oldData.pid });
+      let pComment = await this.modelInstance.select({
+        objectId: oldData.pid,
+      });
       pComment = pComment[0];
 
       const notify = this.service('notify');
-      await notify.run(oldData, pComment, true);
+      await notify.run(newData, pComment, true);
     }
 
     await this.hook('postUpdate', data);
