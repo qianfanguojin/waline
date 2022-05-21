@@ -356,10 +356,10 @@ module.exports = class extends BaseRest {
         insertedAt: ['>', new Date(Date.now() - IPQPS * 1000)],
       });
 
-      if (!think.isEmpty(recent)) {
-        think.logger.debug(`The author has posted in ${IPQPS} seconeds.`);
-        return this.fail('Comment too fast!');
-      }
+      // if (!think.isEmpty(recent)) {
+      //   think.logger.debug(`The author has posted in ${IPQPS} seconeds.`);
+      //   return this.fail('Comment too fast!');
+      // }
 
       think.logger.debug(`Comment post frequence check OK!`);
 
