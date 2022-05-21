@@ -1,4 +1,4 @@
-import type { Locale } from './typings';
+import type { WalineLocale } from '../../typings';
 
 const localeKeys = [
   'nick',
@@ -10,6 +10,8 @@ const localeKeys = [
   'placeholder',
   'sofa',
   'submit',
+  'like',
+  'cancelLike',
   'reply',
   'cancelReply',
   'comment',
@@ -31,9 +33,17 @@ const localeKeys = [
   'word',
   'wordHint',
   'anonymous',
+  'level0',
+  'level1',
+  'level2',
+  'level3',
+  'level4',
+  'level5',
+  'gif',
+  'gifSearchPlaceholder',
 ];
 
-export const generateLocale = (locale: string[]): Locale =>
+export const generateLocale = (locale: string[]): WalineLocale =>
   Object.fromEntries(
     locale.map((item, index) => [localeKeys[index], item])
-  ) as unknown as Locale;
+  ) as unknown as WalineLocale;

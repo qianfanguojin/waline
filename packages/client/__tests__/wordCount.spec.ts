@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest';
 import { getWords, getChinese, getWordNumber } from '../src/utils/wordCount';
 
 describe('Words test', () => {
@@ -53,8 +54,7 @@ describe('Words test', () => {
   });
 
   it('Addtional counts with Markdown links and images', () => {
-    const linkAddress =
-      '//cdn.jsdelivr.net/npm/@waline/client/dist/Waline.min.js';
+    const linkAddress = '//unpkg.com/@waline/client/dist/Waline.min.js';
     const linkMarkdown = `You can found Waline [here](${linkAddress}).`;
     const imageMarkdown = `Here is a image.\n\n![Alt](https://a/fake/link)`;
 
@@ -63,10 +63,8 @@ describe('Words test', () => {
       .filter((word) => word);
 
     expect(linkWords).toEqual([
-      'cdn',
-      'jsdelivr',
-      'net',
-      'npm',
+      'unpkg',
+      'com',
       'waline',
       'client',
       'dist',
@@ -75,8 +73,8 @@ describe('Words test', () => {
       'js',
     ]);
 
-    expect(getWordNumber(linkAddress)).toEqual(10);
-    expect(getWordNumber(linkMarkdown)).toEqual(15);
+    expect(getWordNumber(linkAddress)).toEqual(8);
+    expect(getWordNumber(linkMarkdown)).toEqual(13);
     expect(getWordNumber(imageMarkdown)).toEqual(9);
   });
 
@@ -84,17 +82,20 @@ describe('Words test', () => {
     const codeBlock = `
 \`\`\`html
 <head>
-  ..
-  <script src="//cdn.jsdelivr.net/npm/@waline/client/dist/Waline.min.js"></script>
-  ...
+  <!-- ... -->
+  <script src="https://unpkg.com/@waline/client"></script>
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/@waline/client@v2/dist/waline.css"
+  />
+  <!-- ... -->
 </head>
 <body>
-  ...
+  <!-- ... -->
   <div id="waline"></div>
   <script>
-    Waline({
+    Waline.init({
       el: '#waline',
-      path: location.pathname,
       serverURL: 'https://your-domain.vercel.app',
     });
   </script>
@@ -110,17 +111,24 @@ describe('Words test', () => {
       'html',
       'head',
       'script src',
-      'cdn',
-      'jsdelivr',
-      'net',
-      'npm',
+      'https',
+      'unpkg',
+      'com',
       'waline',
       'client',
-      'dist',
-      'Waline',
-      'min',
-      'js',
       'script',
+      'link\n    rel',
+      'stylesheet',
+      'href',
+      'https',
+      'unpkg',
+      'com',
+      'waline',
+      'client',
+      'v2',
+      'dist',
+      'waline',
+      'css',
       'head',
       'body',
       'div id',
@@ -128,11 +136,9 @@ describe('Words test', () => {
       'div',
       'script',
       'Waline',
+      'init',
       'el',
       'waline',
-      'path',
-      'location',
-      'pathname',
       'serverURL',
       'https',
       'your',
@@ -143,6 +149,6 @@ describe('Words test', () => {
       'body',
     ]);
 
-    expect(getWordNumber(codeBlock)).toEqual(36);
+    expect(getWordNumber(codeBlock)).toEqual(42);
   });
 });

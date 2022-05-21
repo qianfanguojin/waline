@@ -16,7 +16,7 @@ Waline 是经典的前后端分离 Client/Server 架构，提供了较为完善�
   作者 [@MHuiG](https://github.com/MHuiG)，适配 Waline 接口。使用方式如下:
 
   ```html
-  <script src="https://cdn.jsdelivr.net/npm/minivaline/dist/MiniValine.min.js"></script>
+  <script src="https://unpkg.com/minivaline/dist/MiniValine.min.js"></script>
 
   <div id="waline-comments"></div>
   <script>
@@ -24,29 +24,6 @@ Waline 是经典的前后端分离 Client/Server 架构，提供了较为完善�
       el: '#waline-comments',
       backend: 'waline',
       serverURLs: 'YOUR SERVER URL',
-    });
-  </script>
-  ```
-
-- [AprilComment](https://github.com/asforest/AprilComment)
-
-  作者 [asforest](https://github.com/asforest/AprilComment)，白绿色调的简洁风格，Markdown 格式渲染评论，并有一些独特的小功能。使用方式如下：
-
-  ```html
-  <script src="https://cdn.jsdelivr.net/npm/april-comment@latest/dist/index.js"></script>
-  <link
-    rel="stylesheet"
-    type="text/css"
-    href="https://cdn.jsdelivr.net/npm/april-comment@latest/dist/index.css"
-  />
-
-  <div id="comment-widget"></div>
-  <script>
-    $(function () {
-      new AprilComment({
-        el: 'comment-widget',
-        api: 'https://your-waline-backend-url.app',
-      });
     });
   </script>
   ```
@@ -63,7 +40,7 @@ Waline 是经典的前后端分离 Client/Server 架构，提供了较为完善�
 
 - [@mr-hope/vuepress-plugin-comment](https://vuepress-theme-hope.github.io/comment/zh/): VuePress1 评论插件
 
-- [@mr-hope/vuepress-plugin-comment](https://vuepress-theme-hope.github.io/v2/comment/zh/): VuePress2 评论插件
+- [vuepress-plugin-comment2](https://vuepress-theme-hope.github.io/v2/comment/zh/): VuePress2 评论插件
 
 ## 主题
 

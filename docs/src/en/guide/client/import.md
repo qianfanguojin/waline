@@ -3,84 +3,61 @@ title: Importing Client
 icon: import
 ---
 
-Waline provides two versions of client files: default (with its own style) and no-style.
+Waline provides several versions of client files. You can introduce Waline in a number of ways.
 
 ## Via CDN
 
-Recommend to use [jsdelivr](https://cdn.jsdelivr.net/npm/@waline/client/).
+Recommend to use [unpkg](https://unpkg.com/@waline/client/).
 
-### Get the latest version
+::: code-tabs
 
-:::: code-group
-
-::: code-group-item Default
+@tab Default
 
 ```html
-<!-- Use the short link to get latest default file -->
-<script src="//cdn.jsdelivr.net/npm/@waline/client"></script>
+<!-- Scripts -->
+<script src="https://unpkg.com/@waline/client@v2/dist/waline.js"></script>
+<!-- Styles -->
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/@waline/client@v2/dist/waline.css"
+/>
+```
 
-<!-- Omit the version number to automatically apply the latest version -->
-<script src="//cdn.jsdelivr.net/npm/@waline/client/dist/Waline.min.js"></script>
+@tab Pageview Only
 
-<!-- Or manually specify the latest version -->
-<script src="//cdn.jsdelivr.net/@waline/clien@latest/dist/Waline.min.js"></script>
+```html
+<!-- Pageview -->
+<script src="https://unpkg.com/@waline/client/dist/pageview.js"></script>
 ```
 
 :::
 
-::: code-group-item No Style
+::: info Specifies version
+
+For CDN links, if you don't specify a version number, it will be latest version, so if you need to specify a specific version, you need to specify a version number in the format `@version` after `@waline/client`.
 
 ```html
-<!-- Omit the version number to automatically apply the latest version -->
-<script src="//cdn.jsdelivr.net/npm/@waline/client/dist/Waline.noStyle.js"></script>
-
-<!-- Or manually specify the latest version -->
-<script src="//cdn.jsdelivr.net/@waline/clien@latest/dist/Waline.noStyle.js"></script>
+<!-- You need to modify and replace `next` with the version number you want -->
+<script src="https://unpkg.com/@waline/client@v2/dist/waline.js"></script>
 ```
 
 :::
-
-::::
-
-### Get the specified version
-
-:::: code-group
-
-::: code-group-item Default
-
-```html
-<!-- You need to modify and replace `1.0.0` with the version number you want -->
-<script src="//cdn.jsdelivr.net/npm/@waline/client@1.0.0/dist/Waline.min.js"></script>
-```
-
-:::
-
-::: code-group-item No Style
-
-```html
-<!-- You need to modify and replace `1.0.0` with the version number you want -->
-<script src="//cdn.jsdelivr.net/npm/@waline/client@1.0.0/dist/Waline.noStyle.js"></script>
-```
-
-:::
-
-::::
 
 ## Via NPM
 
+### Install
+
 Waline client has been released to [npm](https://www.npmjs.com/package/@waline/client) via `@waline/client`, you can install it with the following command:
 
-:::: code-group
+::: code-tabs
 
-::: code-group-item yarn
+@tab yarn
 
 ```bash
 yarn add -D @waline/client
 ```
 
-:::
-
-::: code-group-item npm
+@tab npm
 
 ```bash
 npm i -D @waline/client
@@ -88,42 +65,70 @@ npm i -D @waline/client
 
 :::
 
-::::
+### Import
 
-Then, please import and use in your source file:
+Waline provides several versions of the file:
 
-:::: code-group
+- `dist/waline.js`: full version, UMD format
 
-::: code-group-item Default
+  This file is the default file for CDN import `@waline/client`, 51 KB Gzip size
 
-```js:line-numbers{2,4,6-9}
-// Use import
-import Waline from '@waline/client';
-// or Use require
-const Waline = require('@waline/client');
+- `dist/shim.js`: full version without dependencies, in Common JS format
 
-Waline({
+  This file is the default file when `require` `@waline/client`, 14.24 KB Gzip size
+
+- `dist/shim.esm.js`: full version without dependencies, ES Module format
+
+  This file is the default file when `import` `@waline/client`, 14.14 KB Gzip size
+
+- `dist/waline.css`: Waline CSS styles
+
+- `dist/component.js`: Waline's Vue component, ES Module format, without dependency bundling
+
+  This file is for using Waline comments in component mode in a Vue project, 13.19 KB Gzip size
+
+- `dist/pageview.js`: Waline's pageview module, UMD format, < 1KB Gzip size
+
+  This file is used for CDN, when only page views are needed
+
+Other format files:
+
+- `dist/waline.cjs.js`: Common JS format for `dist/waline.js` file
+
+- `dist/waline.esm.js`: ES Module format of `dist/waline.js` file
+
+- `dist/pageview.cjs.js`: Common JS format for `dist/pageview.js` file
+
+- `dist/pageview.esm.js`: ES Module format of `dist/pageview.js` file
+
+### Usage
+
+You can import the required files in various forms and use them, the following is an example.
+
+::: code-tabs
+
+@tab JS
+
+```js
+import { init } from '@waline/client';
+import '@waline/client/dist/waline.css';
+
+init({
+  el: '#waline',
+  // ...
+});
+```
+
+@tab TS
+
+```ts
+import { init } from '@waline/client';
+import '@waline/client/dist/waline.css';
+
+init({
   el: '#waline',
   // ...
 });
 ```
 
 :::
-
-::: code-group-item No Style
-
-```js:line-numbers{2,4,6-9}
-// Use import
-import Waline from '@waline/client/dist/Waline.noStyle';
-// or Use require
-const Waline = require('@waline/client/dist/Waline.noStyle');
-
-Waline({
-  el: '#waline',
-  // ...
-});
-```
-
-:::
-
-::::

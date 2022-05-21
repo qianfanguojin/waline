@@ -14,6 +14,7 @@ CREATE TABLE wl_comment (
   rid int DEFAULT NULL,
   sticky boolean DEFAULT NULL,
   status varchar(50) NOT NULL DEFAULT '',
+  "like" int DEFAULT NULL,
   ua text,
   url varchar(255) DEFAULT NULL,
   createdAt timestamp(0) with time zone NULL DEFAULT CURRENT_TIMESTAMP,
@@ -42,6 +43,7 @@ CREATE TABLE wl_users (
   email varchar(255) NOT NULL DEFAULT '',
   password varchar(255) NOT NULL DEFAULT '',
   type varchar(50) NOT NULL DEFAULT '',
+  label varchar(255) DEFAULT NULL,
   url varchar(255) DEFAULT NULL,
   avatar varchar(255) DEFAULT NULL,
   github varchar(255) DEFAULT NULL,
@@ -50,6 +52,7 @@ CREATE TABLE wl_users (
   google varchar(255) DEFAULT NULL,
   weibo varchar(255) DEFAULT NULL,
   qq varchar(255) DEFAULT NULL,
+  "2fa" varchar(32) DEFAULT NULL,
   createdAt timestamp(0) with time zone NULL DEFAULT CURRENT_TIMESTAMP,
   updatedAt timestamp(0) with time zone NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id)

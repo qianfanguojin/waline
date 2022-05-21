@@ -1,5 +1,5 @@
 ---
-title: Custom style
+title: Style Customize
 icon: style
 ---
 
@@ -26,7 +26,7 @@ Meanwhile, `@waline/client` also has built-in dark mode support.
   --waline-active-color: #2ecc71;
 
   /* Layout Color */
-  --waline-text-color: #444;
+  --waline-color: #444;
   --waline-bgcolor: #fff;
   --waline-bgcolor-light: #f8f8f8;
   --waline-bgcolor-hover: #f0f0f0;
@@ -40,7 +40,7 @@ Meanwhile, `@waline/client` also has built-in dark mode support.
 
   /* Avatar */
   --waline-avatar-size: 3.25rem;
-  --waline-mobile-avatar-size: calc(var(--waline-avatar-size) * 9 / 13);
+  --waline-m-avatar-size: calc(var(--waline-avatar-size) * 9 / 13);
 
   /* Badge */
   --waline-badge-color: #3498db;
@@ -92,7 +92,7 @@ darkmode-selector {
   --waline-dark-grey: #999;
 
   /* Layout color */
-  --waline-text-color: #888;
+  --waline-color: #888;
   --waline-bgcolor: #1e1e1e;
   --waline-bgcolor-light: #272727;
   --waline-border-color: #333;
@@ -129,18 +129,4 @@ If you are using a theme that uses shadows (`box-shadow`) instead of borders, yo
 
 ## More
 
-If the above CSS variables cannot meet your custom requirements for Waline styles, you can also:
-
-- Manually add a CSS file to override Waline's default style
-
-  ::: warning
-
-  Please note that since Waline is a pure JS package, it will inject styles into the `<head>` of the web page at runtime, so if you want to override styles, please pay attention to where your CSS is injected.
-
-  If you use a packing tool (e.g.: webpack), your custom styles will probably be packed as external css and imported in `<head>`, which means it is before the styles injected by Waline.
-
-  So in this case, you may need to use a higher priority selector, or place the `<style>` tag in body.
-
-  :::
-
-- Import the unstyled version of Waline, see [Waline import](./import.md) for details
+If the above CSS variables cannot meet your custom requirements for Waline styles, you can write your own css file.

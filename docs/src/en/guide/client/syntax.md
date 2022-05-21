@@ -1,5 +1,5 @@
 ---
-title: Supported Comment Syntax
+title: Comment Syntax Support
 icon: format
 ---
 
@@ -199,13 +199,13 @@ This includes the following restrictions:
 
 - Tex syntax, or mathematical formulas (e.g.: `$a = 1$`) cannot be rendered correctly by default
 
-  You can set Tex rendering during preview by setting the `math` option.
+  You can set Tex rendering during preview by setting the `texRenderer` option.
 
 - Code blocks will be highlighted in random colors splited by specific characters
 
 ::: tip Principle
 
-1. Considering the size, the client uses `marked` for rendering and `hanabi` for highlighting, which will have the above limitations.
+1. Considering the size, the client uses `marked` for rendering and a < 1kb highlighter, which will have the above limitations.
 
 1. When a user submits a comment, the client embeds custom Emoji images, and the raw comment will be sent to the server.
 

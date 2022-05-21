@@ -351,8 +351,44 @@ p.vtex {
     });
   }
 
+  async discord({ title, content }, self, parent) {
+    const { DISCORD_WEBHOOK, SITE_NAME, SITE_URL } = process.env;
+    if (!DISCORD_WEBHOOK) {
+      return false;
+    }
+
+    const data = {
+      self,
+      parent,
+      site: {
+        name: SITE_NAME,
+        url: SITE_URL,
+        postUrl: SITE_URL + self.url + '#' + self.objectId,
+      },
+    };
+    title = nunjucks.renderString(title, data);
+    content = nunjucks.renderString(
+      think.config('DiscordTemplate') ||
+        `💬 {{site.name|safe}} 有新评论啦 
+    【评论者昵称】：{{self.nick}}
+    【评论者邮箱】：{{self.mail}} 
+    【内容】：{{self.comment}} 
+    【地址】：{{site.postUrl}}`,
+      data
+    );
+
+    return request({
+      uri: DISCORD_WEBHOOK,
+      method: 'POST',
+      form: {
+        content: title + '\n' + content,
+      },
+      json: true,
+    });
+  }
+
   async run(comment, parent, disableAuthorNotify = false) {
-    const { AUTHOR_EMAIL, BLOGGER_EMAIL } = process.env;
+    const { AUTHOR_EMAIL, BLOGGER_EMAIL, DISABLE_AUTHOR_NOTIFY } = process.env;
     const { mailSubject, mailTemplate, mailSubjectAdmin, mailTemplateAdmin } =
       think.config();
     const AUTHOR = AUTHOR_EMAIL || BLOGGER_EMAIL;
@@ -381,7 +417,7 @@ p.vtex {
       <br/>
     </div>`;
 
-    if (!isAuthorComment && !disableAuthorNotify) {
+    if (!DISABLE_AUTHOR_NOTIFY && !isAuthorComment && !disableAuthorNotify) {
       const wechat = await this.wechat({ title, content }, comment, parent);
       const qywxAmWechat = await this.qywxAmWechat(
         { title, content },
@@ -391,9 +427,11 @@ p.vtex {
       const qq = await this.qq(comment, parent);
       const telegram = await this.telegram(comment, parent);
       const pushplus = await this.pushplus({ title, content }, comment, parent);
-      console.log(pushplus);
+      const discord = await this.discord({ title, content }, comment, parent);
       if (
-        [wechat, qq, telegram, qywxAmWechat, pushplus].every(think.isEmpty) &&
+        [wechat, qq, telegram, qywxAmWechat, pushplus, discord].every(
+          think.isEmpty
+        ) &&
         !isReplyAuthor
       ) {
         mailList.push({ to: AUTHOR, title, content });

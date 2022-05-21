@@ -1,4 +1,4 @@
-export * from './config';
 export * from './inputs';
+export * from './timeAgo';
 export * from './userInfo';
-export * from './store';
+export * from './like';

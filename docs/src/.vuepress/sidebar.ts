@@ -1,6 +1,6 @@
-import { defineSidebarConfig } from 'vuepress-theme-hope';
+import { sidebar } from 'vuepress-theme-hope';
 
-export const zhSidebarConfig = defineSidebarConfig({
+export const zhSidebarConfig = sidebar({
   '/guide/': [
     '/guide/get-started',
     {
@@ -13,10 +13,11 @@ export const zhSidebarConfig = defineSidebarConfig({
         'syntax',
         'emoji',
         'style',
-        'avatar',
         'i18n',
+        'component',
         'spa',
-        'count',
+        'comment',
+        'pageview',
         'widget/',
       ],
     },
@@ -31,7 +32,6 @@ export const zhSidebarConfig = defineSidebarConfig({
         'cloudbase',
         'deta',
         'railway',
-        'inspirecloud',
         'baidu-cfc',
         'aliyun-fc',
         'vps-deploy',
@@ -61,12 +61,12 @@ export const zhSidebarConfig = defineSidebarConfig({
       text: '参考',
       icon: 'reference',
       prefix: '/reference/',
-      children: ['client', 'instance', 'server', 'api', 'contribution'],
+      children: ['component', 'client', 'server', 'api', 'contribution'],
     },
   ],
 });
 
-export const enSidebarConfig = defineSidebarConfig({
+export const enSidebarConfig = sidebar({
   '/en/guide/': [
     'get-started',
     {
@@ -79,10 +79,11 @@ export const enSidebarConfig = defineSidebarConfig({
         'syntax',
         'emoji',
         'style',
-        'avatar',
         'i18n',
+        'component',
         'spa',
-        'count',
+        'comment',
+        'pageview',
         'widget/',
       ],
     },
@@ -123,7 +124,7 @@ export const enSidebarConfig = defineSidebarConfig({
       text: 'Reference',
       icon: 'reference',
       prefix: 'reference/',
-      children: ['client', 'instance', 'server', 'api', 'contribution'],
+      children: ['component', 'client', 'server', 'api', 'contribution'],
     },
   ],
 });

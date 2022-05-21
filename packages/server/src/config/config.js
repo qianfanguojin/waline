@@ -14,10 +14,10 @@ const {
   TCB_KEY,
   SECURE_DOMAINS,
   DISABLE_USERAGENT,
+  DISABLE_REGION,
   AVATAR_PROXY,
   GITHUB_TOKEN,
   DETA_PROJECT_KEY,
-  INSPIRECLOUD_SERVICE_SECRET,
   OAUTH_URL,
 
   MARKDOWN_CONFIG = '{}',
@@ -37,6 +37,9 @@ const {
   QQ_TEMPLATE,
   TG_TEMPLATE,
   WX_TEMPLATE,
+  DISCORD_TEMPLATE,
+
+  LEVELS,
 } = process.env;
 
 let storage = 'leancloud';
@@ -64,9 +67,6 @@ if (LEAN_KEY) {
 } else if (DETA_PROJECT_KEY) {
   storage = 'deta';
   jwtKey = jwtKey || DETA_PROJECT_KEY;
-} else if (INSPIRECLOUD_SERVICE_SECRET) {
-  storage = 'inspirecloud';
-  jwtKey = jwtKey || INSPIRECLOUD_SERVICE_SECRET;
 }
 
 if (think.env === 'cloudbase' && storage === 'sqlite') {
@@ -92,7 +92,7 @@ const markdown = {
 
 if (isFalse(MARKDOWN_HIGHLIGHT)) markdown.config.highlight = false;
 
-let avatarProxy = 'https://avatar.75cdn.workers.dev/';
+let avatarProxy = '';
 if (AVATAR_PROXY) {
   avatarProxy = !isFalse(AVATAR_PROXY) ? AVATAR_PROXY : '';
 }
@@ -107,6 +107,11 @@ module.exports = {
   disallowIPList: [],
   secureDomains: SECURE_DOMAINS ? SECURE_DOMAINS.split(/\s*,\s*/) : undefined,
   disableUserAgent: DISABLE_USERAGENT && !isFalse(DISABLE_USERAGENT),
+  disableRegion: DISABLE_REGION && !isFalse(DISABLE_REGION),
+  levels:
+    !LEVELS || isFalse(LEVELS)
+      ? false
+      : LEVELS.split(/\s*,\s*/).map((v) => Number(v)),
   avatarProxy,
   oauthUrl,
   markdown,
@@ -117,4 +122,5 @@ module.exports = {
   QQTemplate: QQ_TEMPLATE,
   TGTemplate: TG_TEMPLATE,
   WXTemplate: WX_TEMPLATE,
+  DiscordTemplate: DISCORD_TEMPLATE,
 };

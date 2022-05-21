@@ -163,7 +163,7 @@ export default function () {
               cmt.sticky = sticky;
             }
           });
-          await updateComment(comment.objectId, { sticky });
+          await updateComment(comment.objectId, { sticky: sticky ? 1 : 0 });
           setList({ ...list });
         },
       },
@@ -388,8 +388,8 @@ export default function () {
                     <thead>
                       <tr>
                         <th> </th>
-                        <th>{t('author')}</th>
                         <th> </th>
+                        <th>{t('author')}</th>
                         <th>{t('content')}</th>
                       </tr>
                     </thead>
@@ -404,6 +404,7 @@ export default function () {
                             link,
                             comment,
                             ip,
+                            addr,
                             url,
                             status,
                             rid,
@@ -562,8 +563,10 @@ export default function () {
                                       {mail}
                                     </a>
                                   </span>
-                                  <br />
+                                  {mail && <br />}
                                   <span>{ip}</span>
+                                  {ip && <br />}
+                                  <span>{addr}</span>
                                 </div>
                               </td>
                               <td valign="top" className="comment-body">

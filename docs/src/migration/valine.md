@@ -16,11 +16,12 @@ icon: valine
 
    ```diff
    - <script src='//unpkg.com/valine/dist/Valine.min.js'></script>
-   + <script src='//cdn.jsdelivr.net/npm/@waline/client'></script>
+   + <script src='//unpkg.com/@waline/client@v2/dist/waline.js'></script>
+   + <link href='//unpkg.com/@waline/client@v2/dist/waline.css' rel='stylesheet' />
 
      <script>
    -  new Valine({
-   +  Waline({
+   +  Waline.init({
        el: '#vcomments',
    -   appId: 'Your appId',
    -   appKey: 'Your appKey'
@@ -31,9 +32,17 @@ icon: valine
 
 ::: tip 配置
 
-Waline 和 Valine 大部分的配置都是一样的，但也存在些许不同。对于 v1 及 v0.x 版本，你只需要删除 Valine 原始的配置 `appId` 和 `appKey`，并添加 `serverURL`，其他选项均可正常工作。但是对于未来的 V2 我们将会移除某些 Valine 兼容，转向更好的配置方案。
+Waline V2 已经移除了 Valine 支持进而转向更好的配置方案。以下是部分选项的迁移概要:
 
-Waline 具体的配置详见 [客户端配置](../reference/client.md)。你也可以查看 [Waline 客户端 v1 迁移指南](./client.md) 来了解与 Valine 不兼容的选项。
+- `placeholder`: 使用 `locales.placeholder`
+- `highlight`: 使用 `highlighter`
+- `avatarForce`, `avatar`: 使用服务端的 `AVATAR_PROXY` 环境变量
+- `recordIP`: 不再显示用户 IP，同时在服务端提供 `DISABLE_USERAGENT` 环境变量
+- `requiredFields`: 重命名为 `requiredMeta`
+- `langMode`: 重命名为 `locales`
+- `emojiCDN`, `emojiMap`: 使用更强大的 `emoji` 选项
+
+Waline 具体的配置详见 [客户端配置](../reference/client.md)。你也可以查看 [Waline 客户端 V2 迁移指南](./client.md) 来了解与 Valine 不兼容的选项。
 
 :::
 
@@ -50,3 +59,7 @@ Waline 具体的配置详见 [客户端配置](../reference/client.md)。你也�
 将导出成功的文件内容粘贴至下方的文本框中，点击下方的转换按钮，获得待导入的文件。进入 [腾讯云开发后台 → 数据库](https://console.cloud.tencent.com/tcb/db/index) 界面，选择 `Comment` 集合。若该集合不存在，点击左上角 <kbd>新建集合</kbd> 创建。进入后点击上方的导入按钮，选择刚才获得的转换后文件稍待片刻即可完成导入。
 
 <MigrationTool />
+
+<script setup lang="ts">
+import MigrationTool from '@MigrationTool';
+</script>

@@ -1,4 +1,4 @@
-import { getUserInfo, login, logout, register } from '../services/auth';
+import { getUserInfo, login, logout, register, forgot } from '../services/auth';
 import { updateProfile } from '../services/user';
 
 export const user = {
@@ -18,19 +18,19 @@ export const user = {
         return;
       }
       if (window.opener) {
-        let token = window.TOKEN || sessionStorage.getItem('TOKEN');
-        if (!token) {
-          token = localStorage.getItem('TOKEN');
-        }
+        const localToken = localStorage.getItem('TOKEN');
+        const remember = !!localToken;
+        const token =
+          localToken || window.TOKEN || sessionStorage.getItem('token');
         window.opener.postMessage(
-          { type: 'userInfo', data: { token, ...user } },
+          { type: 'userInfo', data: { token, remember, ...user } },
           '*'
         );
       }
       return dispatch.user.setUser(user);
     },
-    async login({ email, password, remember }) {
-      const { token, ...user } = await login({ email, password });
+    async login({ email, password, code, remember }) {
+      const { token, ...user } = await login({ email, password, code });
       if (token) {
         window.TOKEN = token;
         sessionStorage.setItem('TOKEN', token);
@@ -52,6 +52,9 @@ export const user = {
     },
     register(user) {
       return register(user);
+    },
+    forgot(user) {
+      return forgot(user);
     },
     async updateProfile(data) {
       await updateProfile(data);

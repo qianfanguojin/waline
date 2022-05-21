@@ -1,6 +1,7 @@
 ---
 home: true
 title: Waline
+icon: home
 heroImage: /logo.png
 actions:
   - text: 💡 快速上手
@@ -18,7 +19,7 @@ features:
 
   - title: 轻量
     icon: light
-    details: 54kB gzip 的完整客户端大小
+    details: 48kb gzip 的完整客户端大小
 
   - title: 强大的安全性
     icon: safe

@@ -1,9 +1,14 @@
-import type { Comment, CommentData } from '../typings';
+import type { WalineComment, WalineCommentData } from '../typings';
 
 export interface FetchErrorData {
   errno: number;
   errmsg: string;
 }
+
+const JSON_HEADERS: Record<string, string> = {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  'Content-Type': 'application/json',
+};
 
 const errorCheck = <T = unknown>(data: T | FetchErrorData, name = ''): T => {
   if (typeof data === 'object' && (data as FetchErrorData).errno)
@@ -18,6 +23,7 @@ const errorCheck = <T = unknown>(data: T | FetchErrorData, name = ''): T => {
 
 export interface FetchCountOptions {
   serverURL: string;
+  lang: string;
   paths: string[];
   signal: AbortSignal;
   token?: string;
@@ -25,6 +31,7 @@ export interface FetchCountOptions {
 
 export const fetchCommentCount = ({
   serverURL,
+  lang,
   paths,
   signal,
   token,
@@ -36,7 +43,7 @@ export const fetchCommentCount = ({
     fetch(
       `${serverURL}/comment?type=count&url=${encodeURIComponent(
         paths.join(',')
-      )}`,
+      )}&lang=${lang}`,
       { signal, headers }
     )
       .then((resp) => resp.json() as Promise<number | number[]>)
@@ -47,6 +54,7 @@ export const fetchCommentCount = ({
 };
 export interface FetchRecentOptions {
   serverURL: string;
+  lang: string;
   count: number;
   signal: AbortSignal;
   token?: string;
@@ -54,18 +62,19 @@ export interface FetchRecentOptions {
 
 export const fetchRecentComment = ({
   serverURL,
+  lang,
   count,
   signal,
   token,
-}: FetchRecentOptions): Promise<Comment[]> => {
+}: FetchRecentOptions): Promise<WalineComment[]> => {
   const headers: Record<string, string> = {};
   if (token) headers.Authorization = `Bearer ${token}`;
 
-  return fetch(`${serverURL}/comment?type=recent&count=${count}`, {
+  return fetch(`${serverURL}/comment?type=recent&count=${count}&lang=${lang}`, {
     signal,
     headers,
   })
-    .then((resp) => resp.json() as Promise<Comment[]>)
+    .then((resp) => resp.json() as Promise<WalineComment[]>)
     .then((data) => errorCheck(data, 'recent comment'));
 };
 
@@ -76,16 +85,18 @@ export interface FetchListOptions {
   pageSize: number;
   signal: AbortSignal;
   token?: string;
+  lang: string;
 }
 
 export interface FetchListResult {
   count: number;
-  data: Comment[];
+  data: WalineComment[];
   totalPages: number;
 }
 
 export const fetchCommentList = ({
   serverURL,
+  lang,
   path,
   page,
   pageSize,
@@ -98,7 +109,7 @@ export const fetchCommentList = ({
   return fetch(
     `${serverURL}/comment?path=${encodeURIComponent(
       path
-    )}&pageSize=${pageSize}&page=${page}`,
+    )}&pageSize=${pageSize}&page=${page}&lang=${lang}`,
     { signal, headers }
   )
     .then((resp) => resp.json() as Promise<FetchListResult>)
@@ -109,11 +120,11 @@ export interface PostCommentOptions {
   serverURL: string;
   lang: string;
   token?: string;
-  comment: CommentData;
+  comment: WalineCommentData;
 }
 
 export interface PostCommentResponse {
-  data?: CommentData;
+  data?: WalineComment;
   errmsg?: string;
 }
 
@@ -124,6 +135,7 @@ export const postComment = ({
   comment,
 }: PostCommentOptions): Promise<PostCommentResponse> => {
   const headers: Record<string, string> = {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     'Content-Type': 'application/json',
   };
 
@@ -136,39 +148,115 @@ export const postComment = ({
   }).then((resp) => resp.json() as Promise<PostCommentResponse>);
 };
 
-export interface FetchVisitCountOptions {
+export interface DeleteCommentOptions {
   serverURL: string;
+  lang: string;
+  token: string;
+  objectId: string | number;
+}
+
+export const deleteComment = ({
+  serverURL,
+  lang,
+  token,
+  objectId,
+}: DeleteCommentOptions): Promise<void> => {
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${token}`,
+  };
+
+  return fetch(`${serverURL}/comment/${objectId}?lang=${lang}`, {
+    method: 'DELETE',
+    headers,
+  }).then((resp) => resp.json() as Promise<void>);
+};
+
+export interface LikeCommentOptions {
+  serverURL: string;
+  lang: string;
+  objectId: number | string;
+  like: boolean;
+}
+
+export const likeComment = ({
+  serverURL,
+  lang,
+  objectId,
+  like,
+}: LikeCommentOptions): Promise<void> =>
+  fetch(`${serverURL}/comment/${objectId}?lang=${lang}`, {
+    method: 'PUT',
+    headers: JSON_HEADERS,
+    body: JSON.stringify({ like }),
+  }).then((resp) => resp.json() as Promise<void>);
+
+export interface UpdateCommentOptions {
+  serverURL: string;
+  lang: string;
+  token: string;
+  objectId: number | string;
+  status?: 'approved' | 'waiting' | 'spam';
+  sticky?: number;
+}
+
+export const updateComment = ({
+  serverURL,
+  lang,
+  token,
+  objectId,
+  ...data
+}: UpdateCommentOptions): Promise<void> => {
+  const headers: Record<string, string> = {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`,
+  };
+
+  return fetch(`${serverURL}/comment/${objectId}?lang=${lang}`, {
+    method: 'PUT',
+    headers,
+    body: JSON.stringify(data),
+  }).then((resp) => resp.json() as Promise<void>);
+};
+
+export interface FetchPageviewsOptions {
+  serverURL: string;
+  lang: string;
   paths: string[];
   signal: AbortSignal;
 }
 
-export const fetchVisitCount = ({
+export const fetchPageviews = ({
   serverURL,
+  lang,
   paths,
   signal,
-}: FetchVisitCountOptions): Promise<number[]> =>
-  fetch(`${serverURL}/article?path=${encodeURIComponent(paths.join(','))}`, {
-    signal,
-  })
+}: FetchPageviewsOptions): Promise<number[]> =>
+  fetch(
+    `${serverURL}/article?path=${encodeURIComponent(
+      paths.join(',')
+    )}&lang=${lang}`,
+    { signal }
+  )
     .then((resp) => resp.json() as Promise<number[] | number>)
     .then((data) => errorCheck(data, 'visit count'))
     // TODO: Improve this API
     .then((counts) => (Array.isArray(counts) ? counts : [counts]));
 
-export interface PostVisitCountOptions {
+export interface UpdatePageviewsOptions {
   serverURL: string;
+  lang: string;
   path: string;
 }
 
-export const postVisitCount = ({
+export const updatePageviews = ({
   serverURL,
+  lang,
   path,
-}: PostVisitCountOptions): Promise<number> =>
-  fetch(`${serverURL}/article`, {
+}: UpdatePageviewsOptions): Promise<number> =>
+  fetch(`${serverURL}/article?lang=${lang}`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: JSON_HEADERS,
     body: JSON.stringify({ path }),
   })
     .then((resp) => resp.json() as Promise<number>)

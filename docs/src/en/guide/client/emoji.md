@@ -1,9 +1,9 @@
 ---
-title: Custom emoji
+title: Emoji Customize
 icon: emoji
 ---
 
-You can customize the emoji of the comment box by setting `emoji` option, you should set it to an **array** containing _preset link_ or _preset config object_.
+You can customize the emoji of the comment box by setting `emoji` option, you should set it to an **array** containing _preset link_ or _preset config object_. If you don't want it, just set it to `false`.
 
 <!-- more -->
 
@@ -14,25 +14,25 @@ Waline provides a series of emoji presets that can be used out of box. You can a
 - Alus
 
   ```http
-  https://cdn.jsdelivr.net/gh/walinejs/emojis@1.0.0/alus
+  https://unpkg.com/@waline/emojis@1.0.1/alus
   ```
 
 - Bilibili
 
   ```http
-  https://cdn.jsdelivr.net/gh/walinejs/emojis@1.0.0/bilibili
+  https://unpkg.com/@waline/emojis@1.0.1/bilibili
   ```
 
 - QQ
 
   ```http
-  https://cdn.jsdelivr.net/gh/walinejs/emojis@1.0.0/qq
+  https://unpkg.com/@waline/emojis@1.0.1/qq
   ```
 
 - Tieba
 
   ```http
-  https://cdn.jsdelivr.net/gh/walinejs/emojis@1.0.0/tieba
+  https://unpkg.com/@waline/emojis@1.0.1/tieba
   ```
 
 - Twemoji
@@ -40,7 +40,7 @@ Waline provides a series of emoji presets that can be used out of box. You can a
   - Emoji:
 
     ```http
-    https://cdn.jsdelivr.net/gh/walinejs/emojis@1.0.0/tw-emoji
+    https://unpkg.com/@waline/emojis@1.0.1/tw-emoji
     ```
 
   ::: details Others presets
@@ -48,73 +48,73 @@ Waline provides a series of emoji presets that can be used out of box. You can a
   - Full: (Not recommand)
 
     ```http
-    https://cdn.jsdelivr.net/gh/walinejs/emojis@1.0.0/tw
+    https://unpkg.com/@waline/emojis@1.0.1/tw
     ```
 
   - Body:
 
     ```http
-    https://cdn.jsdelivr.net/gh/walinejs/emojis@1.0.0/tw-body
+    https://unpkg.com/@waline/emojis@1.0.1/tw-body
     ```
 
   - Food:
 
     ```http
-    https://cdn.jsdelivr.net/gh/walinejs/emojis@1.0.0/tw-food
+    https://unpkg.com/@waline/emojis@1.0.1/tw-food
     ```
 
   - Natural:
 
     ```http
-    https://cdn.jsdelivr.net/gh/walinejs/emojis@1.0.0/tw-natural
+    https://unpkg.com/@waline/emojis@1.0.1/tw-natural
     ```
 
   - Object:
 
     ```http
-    https://cdn.jsdelivr.net/gh/walinejs/emojis@1.0.0/tw-object
+    https://unpkg.com/@waline/emojis@1.0.1/tw-object
     ```
 
   - Symbol:
 
     ```http
-    https://cdn.jsdelivr.net/gh/walinejs/emojis@1.0.0/tw-symbol
+    https://unpkg.com/@waline/emojis@1.0.1/tw-symbol
     ```
 
   - People:
 
     ```http
-    https://cdn.jsdelivr.net/gh/walinejs/emojis@1.0.0/tw-people
+    https://unpkg.com/@waline/emojis@1.0.1/tw-people
     ```
 
   - Sport:
 
     ```http
-    https://cdn.jsdelivr.net/gh/walinejs/emojis@1.0.0/tw-sport
+    https://unpkg.com/@waline/emojis@1.0.1/tw-sport
     ```
 
   - Time:
 
     ```http
-    https://cdn.jsdelivr.net/gh/walinejs/emojis@1.0.0/tw-time
+    https://unpkg.com/@waline/emojis@1.0.1/tw-time
     ```
 
   - Travel:
 
     ```http
-    https://cdn.jsdelivr.net/gh/walinejs/emojis@1.0.0/tw-travel
+    https://unpkg.com/@waline/emojis@1.0.1/tw-travel
     ```
 
   - Weather:
 
     ```http
-    https://cdn.jsdelivr.net/gh/walinejs/emojis@1.0.0/tw-weather
+    https://unpkg.com/@waline/emojis@1.0.1/tw-weather
     ```
 
   - Flag:
 
     ```http
-    https://cdn.jsdelivr.net/gh/walinejs/emojis@1.0.0/tw-flag
+    https://unpkg.com/@waline/emojis@1.0.1/tw-flag
     ```
 
   :::
@@ -122,7 +122,7 @@ Waline provides a series of emoji presets that can be used out of box. You can a
 - Weibo
 
   ```http
-  https://cdn.jsdelivr.net/gh/walinejs/emojis@1.0.0/weibo
+  https://unpkg.com/@waline/emojis@1.0.1/weibo
   ```
 
 ::: warning
@@ -134,14 +134,14 @@ Waline DO NOT have any copright of above emojis, use them at your own risk.
 ### Example
 
 ```js
-Waline({
+Waline.init({
   el: '#waline',
   serverURL: '<YOUR SERVER URL>',
 
   // Set emoji to Weibo and Bilibili
   emoji: [
-    'https://cdn.jsdelivr.net/gh/walinejs/emojis@1.0.0/weibo',
-    'https://cdn.jsdelivr.net/gh/walinejs/emojis@1.0.0/bilibili',
+    '//unpkg.com/@waline/emojis@1.0.1/weibo',
+    '//unpkg.com/@waline/emojis@1.0.1/bilibili',
   ],
 });
 ```
@@ -209,7 +209,7 @@ Then you can use `'https://example.com/myemoji'` as a available preset in `emoji
 
 ### Advanced
 
-We recommend you to upload images to a GitHub repo and add a tag after each modification. In this way, you can use the GitHub tag CDN link on [cdn.jsdelivr.net](https://www.jsdelivr.com/) as your preset, which format is `https://cdn.jsdelivr.net/ gh/user/repo@version/file`. After the tag is bound, original links referenced by the historical comment will still be valid if you edit the images.
+We recommend you to upload images to a GitHub repo and add a tag after each modification. In this way, you can use the GitHub tag CDN link on [cdn.jsdelivr.net](https://www.jsdelivr.com/) as your preset, which format is `https://cdn.jsdelivr.net/gh/user/repo@version/file`. After the tag is bound, original links referenced by the historical comment will still be valid if you edit the images.
 
 ::: tip
 
@@ -263,7 +263,7 @@ Though Waline is still compatible with Valine's custom emoji syntax, this compat
 Use `emojiCDN` to set the address prefix of emoji images, and use `emojiMaps` to set the mapping between emoji title and image:
 
 ```js
-Waline({
+Waline.init({
   el: '#waline',
   serverURL: '<YOUR SERVER URL>',
 
@@ -286,7 +286,7 @@ If you need to adapt the emoji size of the historical version, you can use the C
 
 ```css
 /* You need to replace `https://img.t.sinajs.cn` with your own CDN */
-.v[data-class='v'] .vcontent img[src^="https://img.t.sinajs.cn"]
+.wl-content img[src^="https://img.t.sinajs.cn"]
 {
   width: 1.25em;
   margin: 0.25em;

@@ -1,6 +1,7 @@
 ---
 home: true
 title: Waline
+icon: home
 heroImage: /logo.png
 actions:
   - text: 💡 Get Started
@@ -18,7 +19,7 @@ features:
 
   - title: LightWeight
     icon: light
-    details: 54kb gzip size of whole client
+    details: 48kb gzip size of whole client
 
   - title: Improved Security
     icon: safe

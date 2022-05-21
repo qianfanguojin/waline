@@ -1,5 +1,5 @@
 ---
-title: Independent deployment
+title: Self Host
 icon: server
 ---
 
@@ -59,12 +59,25 @@ services:
 
 ## Run directly (Recommanded)
 
-It's easy to run without using docker deployment, just run the `vanilla.js` file in the module after installing.
+It's easy to run without using docker deployment, after setting environment variables, just run the `vanilla.js` file in the module after installing.
+
+::: code-tabs
+
+@tab npm
 
 ```bash
 npm install @waline/vercel
 node node_modules/@waline/vercel/vanilla.js
 ```
+
+@tab yarn
+
+```bash
+yarn add @waline/vercel
+node node_modules/@waline/vercel/vanilla.js
+```
+
+:::
 
 ## Nginx config
 
